@@ -38,6 +38,7 @@ async function createRealm(realmJson: object): Promise<void> {
   const accessToken = await getAdminAccessToken();
 
   try {
+    console.log(`Attempting to create a realm on ${keycloakBaseUrl}/admin/realms`)
     const response = await axios.post(
       `${keycloakBaseUrl}/admin/realms`,
       realmJson,
