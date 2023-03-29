@@ -1,0 +1,69 @@
+{
+  "id": "myrealm",
+  "realm": "myrealm",
+  "displayNameHtml" : "Login",
+  "enabled": true,
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "verifyEmail": false,
+  "resetPasswordAllowed": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 315,
+  "accessCodeLifespan": 300,
+  "notBefore": 0,
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "User privileges"
+      },
+      {
+        "name": "admin",
+        "description": "Administrator privileges"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "user",
+      "enabled": true,
+      "email": "sample-user@example",
+      "firstName": "Sample",
+      "lastName": "User",
+      "credentials": [{ "type": "password", "value": "password" }],
+      "realmRoles": ["user"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "myclient",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "myclientsecret",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "defaultRoles": ["user"],
+      "defaultClientScopes": ["email", "profile", "roles"]
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "myclient",
+      "roles": ["user"]
+    }
+  ],
+  "clientScopeMappings": {
+    "account": [
+      {
+        "client": "myclient",
+        "roles": ["view-profile"]
+      }
+    ]
+  },
+  "userFederationProviders": []
+}

@@ -1,0 +1,44 @@
+{
+  "name": "my-drive-app",
+  "version": "1.0.0",
+  "description": "A file storage app",
+  "main": "app.js",
+  "scripts": {
+    "start": "dotenv -- ts-node src/app.ts",
+    "dev": "nodemon app.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "dependencies": {
+    "axios": "^0.24.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv-cli": "^7.1.0",
+    "express": "^4.17.2",
+    "express-fileupload": "^1.4.0",
+    "express-jwt": "^6.1.0",
+    "http-proxy-middleware": "^2.0.6",
+    "jsonwebtoken": "^8.5.1",
+    "mime-types": "^2.1.32",
+    "minio": "^7.0.33",
+    "mongodb": "^4.4.6",
+    "mongoose": "^7.0.3",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.4",
+    "multer-s3": "^2.10.0",
+    "openid-client": "^4.30.0",
+    "passport": "^0.6.0",
+    "passport-jwt": "^4.0.1",
+    "passport-keycloak-bearer": "^2.3.0",
+    "react-query": "^3.29.1",
+    "tsc": "^2.0.4",
+    "typescript": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/express-fileupload": "^1.4.1",
+    "@types/morgan": "^1.9.4",
+    "@types/passport": "^1.0.12",
+    "nodemon": "^2.0.14",
+    "ts-node": "^10.9.1"
+  }
+}

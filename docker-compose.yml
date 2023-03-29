@@ -1,0 +1,144 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./server:/usr/src/app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: "production"
+      PORT: "3000"
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_DB: ${MONGO_DB}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASS: ${MONGO_PASS}
+      MONGO_URI: ${MONGO_URI}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_USE_SSL: ${MINIO_USE_SSL}
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      OPENID_ISSUER_URL: ${OPENID_ISSUER_URL}
+      OPENID_CLIENT_ID: ${OPENID_CLIENT_ID}
+      OPENID_CLIENT_SECRET: ${OPENID_CLIENT_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_SECRET: ${KEYCLOAK_SECRET}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+
+    depends_on:
+      - mongo
+      - keycloak
+      - minio
+    networks:
+      - my-network
+    links:
+      - keycloak
+      - minio
+
+  keycloak:
+    #image: sleighzy/keycloak:latest
+    hostname: keycloak
+    image: quay.io/keycloak/keycloak:21.0.1
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: mysql
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: ${KEYCLOAK_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD}
+      #JAVA_OPTS: -Dkeycloak.import=/tmp/my-realm.json
+    volumes:
+      #- ./my-realm.json:/tmp/my-realm.json
+      - ./keycloak-realm:/opt/keycloak/data/import
+      - ./keycloak-scripts:/opt/jboss/startup-scripts
+      - ./keycloak-data:/opt/jboss/keycloak/standalone/data
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    depends_on:
+      - mongo
+      - mysql
+    networks:
+      - my-network
+    command:
+      - start --import-realm  --proxy edge --hostname-strict=false --hostname-url ${SERVER_URL}/auth
+      # - start-dev --import-realm 
+      # --hostname-strict=false 
+      #--hostname-url ${SERVER_URL}/auth
+
+  minio:
+    image: minio/minio:latest
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET}
+    ports:
+      - "9000:9000"
+    command: server /data
+    networks:
+      - my-network
+
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
+      /usr/bin/mc mb myminio/${MINIO_BUCKET};
+      /usr/bin/mc policy set public myminio/${MINIO_BUCKET};
+      exit 0;
+      "
+    networks:
+      - my-network
+
+  mongo:
+    image: mongo:6
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT:-mongodb}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-mongodb}
+      MONGO_INITDB_DATABASE: ${MONGO_ROOT_DB:-mongodb}
+    ports:
+      - "27017:27017"
+    volumes:
+      - type: volume
+        source: mongo-data
+        target: /data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    networks:
+      - my-network
+
+  mysql:
+    image: mysql/mysql-server:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: keycloak
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: keycloak
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - my-network
+
+
+volumes:
+  mongo-data:
+  minio-data:
+  mysql-data:
+
+networks:
+  my-network:
+    driver: bridge
