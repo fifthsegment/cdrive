@@ -25,7 +25,6 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
     "multer-s3": "^2.10.0",
-    "openid-client": "^4.30.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-keycloak-bearer": "^2.3.0",
