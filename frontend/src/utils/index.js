@@ -1,0 +1,1 @@
+export const isFolder = (item) => item.type === "folder"
