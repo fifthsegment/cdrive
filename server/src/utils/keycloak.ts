@@ -4,8 +4,11 @@ import {
   KEYCLOAK_ADMIN_USER,
   KEYCLOAK_SERVER_URL,
 } from "../config";
+const querystring = require('querystring');
 
-const keycloakBaseUrl = `${KEYCLOAK_SERVER_URL}/auth`;
+
+
+const keycloakBaseUrl = `${KEYCLOAK_SERVER_URL}`;
 const adminUsername = KEYCLOAK_ADMIN_USER;
 const adminPassword = KEYCLOAK_ADMIN_PASS;
 const clientId = "admin-cli"; // Default admin client ID
@@ -17,14 +20,13 @@ interface AccessTokenResponse {
 async function getAdminAccessToken(): Promise<string> {
   const response = await axios.post<AccessTokenResponse>(
     `${keycloakBaseUrl}/realms/master/protocol/openid-connect/token`,
-    null,
+    querystring.stringify({
+      grant_type: "password",
+      client_id: clientId,
+      username: adminUsername,
+      password: adminPassword,
+    }),
     {
-      params: {
-        grant_type: "password",
-        client_id: clientId,
-        username: adminUsername,
-        password: adminPassword,
-      },
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -35,10 +37,15 @@ async function getAdminAccessToken(): Promise<string> {
 }
 
 async function createRealm(realmJson: object): Promise<void> {
+  console.log(
+    "Getting access token from = " +
+      `${keycloakBaseUrl}/realms/master/protocol/openid-connect/token`
+  );
   const accessToken = await getAdminAccessToken();
-
   try {
-    console.log(`Attempting to create a realm on ${keycloakBaseUrl}/admin/realms`)
+    console.log(
+      `Attempting to create a realm on ${keycloakBaseUrl}/admin/realms`
+    );
     const response = await axios.post(
       `${keycloakBaseUrl}/admin/realms`,
       realmJson,
@@ -127,8 +134,10 @@ const realmJson = {
 };
 export const initKeycloak = async () => {
   try {
-    await createRealm(realmJson);
+    setTimeout(async () => {
+      await createRealm(realmJson);
+    }, 1000 * 8);
   } catch (error) {
-    console.error("Error executing createRealm function:", error);
+    console.error("Error executing createRealm function:", error.response.data);
   }
 };

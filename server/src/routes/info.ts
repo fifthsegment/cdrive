@@ -1,4 +1,5 @@
 import { MINIO_PORT, MINIO_USE_SSL } from "../config";
+import { initKeycloak } from "../utils/keycloak";
 
 const express = require('express');
 
