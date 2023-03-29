@@ -1,12 +1,13 @@
 FROM node:16-alpine
 
 WORKDIR /usr/src/app
+# WORKDIR /server
 
-RUN chmod +x /opt/jboss/startup-scripts/configure-keycloak.sh
+# RUN chmod +x /opt/jboss/startup-scripts/configure-keycloak.sh
 
 
 COPY package*.json ./
-RUN npm install --production
+RUN yarn install --production
 
 COPY . .
 
@@ -28,6 +29,6 @@ ENV JWT_SECRET myjwtsecret
 
 EXPOSE 3000
 
-RUN rm /opt/jboss/keycloak/standalone/configuration/keycloak-add-user.json
+# RUN rm /opt/jboss/keycloak/standalone/configuration/keycloak-add-user.json
 
-CMD ["npm", "start"]
+CMD ["yarn", "start"]
