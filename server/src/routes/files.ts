@@ -8,7 +8,7 @@ import {
 } from "../types/server";
 
 import express from "express";
-import Minio from "minio";
+import * as Minio from "minio";
 import { v4 as uuidv4 } from "uuid";
 import stream from "stream";
 import { validateUser } from "../middleware/auth";
@@ -56,7 +56,7 @@ const createFileInDatabase = async (
 
 const deleteFiles = async (items:FileIdsObject[], userId: string) => {
   const db = await connectToDatabase();
-  
+
   const query = { _id: { $in: items.map((item) => item.id) }, owner: userId };
 
   const files = await db.collection("files").find<File>(query).toArray();
@@ -94,10 +94,16 @@ router.put("/rename/:id", validateUser, async (incomingReq, res) => {
     const bucketName = process.env.MINIO_BUCKET;
     const oldFilename = id + "/" + file.name;
     const newFilename = id + "/" + newName;
+
+    console.log("Old name = ", oldFilename);
+    console.log("New Filename = ", newFilename)
+
     // Check if the source object exists
     const stat = await minioClient.statObject(bucketName, oldFilename);
+    console.log("stat = ", stat)
     // Copy the object with the new filename
     const copyConditions = new Minio.CopyConditions();
+    console.log("copy conditions", copyConditions)
     await minioClient.copyObject(
       bucketName,
       newFilename,

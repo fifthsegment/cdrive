@@ -850,6 +850,13 @@
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-3.0.1.tgz#5f8f2bca0a5863cb69bc0b0acd88c96cb1d4ae10"
   integrity sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==
 
+"@types/minio@^7.0.18":
+  version "7.0.18"
+  resolved "https://registry.yarnpkg.com/@types/minio/-/minio-7.0.18.tgz#e6549628b4f9aaef70c5ea2e398e26efba78e61f"
+  integrity sha512-RMWsdfcZ1dNtKim++7D3qa0l4qqu+hyZtWhqMul+hOTmF8snDjw2MGzgQZVJEJ+DXtmHnHgR2uJHo7EeCp1DiQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/morgan@^1.9.4":
   version "1.9.4"
   resolved "https://registry.yarnpkg.com/@types/morgan/-/morgan-1.9.4.tgz#99965ad2bdc7c5cee28d8ce95cfa7300b19ea562"

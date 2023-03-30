@@ -29,16 +29,11 @@ const getItemIdsToDelete = async (
     .toArray()) as File[];
   const folders = (await db
     .collection("folders")
-    .find<Folder>({ parentFolder: folderId, type: "folder", owner: userId })
+    .find<Folder>({ parentFolder: folderId, owner: userId })
     .toArray()) as Folder[];
+
+  console.log("[Cdrive] Recursive find = ", [...folders, ...files])
   // Recursively delete all the files and subfolders
-  if (folders.length === 0) {
-    return files.map((file: File) => ({
-      id: file._id,
-      key: file._id + "/" + file.name,
-      type: "file",
-    }));
-  }
   let output: { id: any; key: string; type: string }[] = [];
   for (let i = 0; i < folders.length; i++) {
     const filesToRemove = await getItemIdsToDelete(folders[i]._id, userId);
@@ -185,15 +180,19 @@ router.post("/", validateUser, async (incomingReq, res) => {
 
 router.delete("/", validateUser, async (incomingReq, res) => {
   const req = incomingReq as IRequest;
-  const { fileIds: items = [] } = req.body as RequestBodyFileIds;
-  if (!items || items.length === 0) {
-    return res.sendStatus(400);
+  console.log("[Cdrive] Req.body = ", req.body)
+  const fileIds  = req.body.fileIds;
+  console.log("[Cdrive] fileIds = ", fileIds)
+
+  if (!fileIds || fileIds.length === 0) {
+    return res.sendStatus(400).send({error: "No fileIds received"});
   }
   try {
-    const itemIdsToDelete = await getItemIdsToDelete(items[0].id, req.user?.id);
+    console.log("[Cdrive] User id = ", req.user.id, "Folder id = ", fileIds[0].id)
+    const itemIdsToDelete = await getItemIdsToDelete(fileIds[0].id, req.user?.id);
     const filesToDelete = itemIdsToDelete.filter((item) => !isFolder(item));
     const foldersToDelete = itemIdsToDelete.filter((item) => isFolder(item));
-
+    console.log("[Cdrive] Items to delete = ", itemIdsToDelete)
     const bucketName = process.env.MINIO_BUCKET;
 
     const keysToDelete = filesToDelete.map((item) => item.key);
@@ -209,17 +208,12 @@ router.delete("/", validateUser, async (incomingReq, res) => {
     await db.collection("files").deleteMany(queryDeleteFiles);
     await db.collection("folders").deleteMany(queryDeleteFolders);
     console.log("[Cdrive] Attempting to delete objects from storage");
-    const resp = await minioClient.removeObjects(bucketName, keysToDelete);
-    console.log("[Cdrive] Storage removal response = ", resp);
-    if (!resp) {
-      res.json(itemIdsToDelete);
-      return res.sendStatus(200);
-    } else {
-      return res.sendStatus(400);
-    }
+    await minioClient.removeObjects(bucketName, keysToDelete);
+    console.log("[Cdrive] keys to delete = ", keysToDelete)
+    res.sendStatus(200)
   } catch (err) {
     console.log("[CDrive:Error] Error in delete endpoint");
-    console.error(err);
+    console.log(err);
     return res.sendStatus(500);
   }
 });
