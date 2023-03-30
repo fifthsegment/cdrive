@@ -7,10 +7,17 @@ const {
     MINIO_SECRET_KEY = "secretkey",
     MINIO_PORT = "38398",
     KEYCLOAK_SERVER_URL = "http://keycloak",
-    MONGO_URI = "mongodb://localhost:2717/",
     KEYCLOAK_ADMIN_USER = "admin",
     KEYCLOAK_ADMIN_PASS = "admin",
-    MONGO_DB = ""
+    MONGO_URI = "mongodb://localhost:2717/",
+    MONGO_DB = "",
+    MONGO_HOST = "mongo",
+    MONGO_PORT = "27017",
+    MONGO_ADMIN_DB = "admin",
+    MONGO_USER = "user",
+    MONGO_PASS = "password",
+    MONGO_ADMIN_USER = "mongodb",
+    MONGO_ADMIN_PASS = "mongodb"
   } = process.env;
 
   export {
@@ -25,5 +32,12 @@ const {
     MINIO_ACCESS_KEY,
     MINIO_SECRET_KEY,
     KEYCLOAK_ADMIN_USER,
-    KEYCLOAK_ADMIN_PASS
+    KEYCLOAK_ADMIN_PASS,
+    MONGO_HOST,
+    MONGO_PORT,
+    MONGO_ADMIN_DB,
+    MONGO_ADMIN_USER,
+    MONGO_ADMIN_PASS,
+    MONGO_USER,
+    MONGO_PASS
   }

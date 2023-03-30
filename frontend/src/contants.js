@@ -1,4 +1,5 @@
-export const SERVER_BASE_URL = "http://cdrive.ubwiservice.com";
+// export const SERVER_BASE_URL = "http://cdrive.ubwiservice.com";
+export const SERVER_BASE_URL = "http://localhost:3000";
 
 export const ROOT_FOLDER = {
   name: "root",

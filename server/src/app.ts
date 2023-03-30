@@ -14,6 +14,7 @@ import infoRouter from "./routes/info";
 import searchRouter from "./routes/search";
 import { MINIO_USE_SSL, MINIO_ENDPOINT, MINIO_PORT, KEYCLOAK_SERVER_URL } from "./config";
 import { initKeycloak } from "./utils/keycloak";
+import { initDb } from "./utils/initdb";
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use(bodyParser.json());
   try {
     await connectToKeycloak();
     await initKeycloak();
+    await initDb();
     // await connectToDb();
     app.use(passport.initialize());
 
