@@ -2,3 +2,5 @@
 server/node_modules
 frontend/node_modules
 server/Archive.zip
+frontend/build
+server/bin

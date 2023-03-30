@@ -59,7 +59,7 @@ services:
       #JAVA_OPTS: -Dkeycloak.import=/tmp/my-realm.json
     volumes:
       #- ./my-realm.json:/tmp/my-realm.json
-      - ./keycloak-realm:/opt/keycloak/data/import
+      #- ./keycloak-realm:/opt/keycloak/data/import
       - ./keycloak-scripts:/opt/jboss/startup-scripts
       - ./keycloak-data:/opt/jboss/keycloak/standalone/data
     ports:

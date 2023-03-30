@@ -4,8 +4,8 @@
   "description": "A file storage app",
   "main": "app.js",
   "scripts": {
-    "start": "dotenv -- ts-node src/app.ts",
-    "dev": "nodemon app.js",
+    "start": "yarn run build && node bin/app.js",
+    "build": "tsc",
     "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {

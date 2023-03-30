@@ -83,10 +83,10 @@ router.get("/", validateUser, async (req, res) => {
       .collection("folders")
       .find<Folder>({ parentFolder: parentId })
       .toArray()) as Folder[];
-    res.json(folders);
+    return res.json(folders);
   } catch (err) {
     console.error(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 
@@ -111,10 +111,10 @@ router.get(
       const folderFound = folders[0];
       const chain = await getFullFolderPath(folderFound.parentFolder);
 
-      res.json([{ ...folderFound, chain: [folderFound, ...chain] }]);
+      return res.json([{ ...folderFound, chain: [folderFound, ...chain] }]);
     } catch (err) {
       console.error(err);
-      res.sendStatus(500);
+      return res.sendStatus(500);
     }
   }
 );
@@ -149,10 +149,10 @@ router.put("/rename/:id", validateUser, async (incomingReq, res) => {
     const folderUpdateResult = await db
       .collection("folders")
       .updateOne({ _id: id }, { $set: { name: newName, path: newPath } });
-    res.json(folderUpdateResult);
+    return res.json(folderUpdateResult);
   } catch (err) {
     console.error(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 
@@ -176,10 +176,10 @@ router.post("/", validateUser, async (incomingReq, res) => {
       updatedAt: new Date(),
       owner: req.user?.id,
     });
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } catch (err) {
     console.error(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 
@@ -209,10 +209,10 @@ router.delete("/", validateUser, async (incomingReq, res) => {
     await db.collection("folders").deleteMany(queryDeleteFolders);
     await minioClient.removeObjects(bucketName, keysToDelete);
     res.json(itemIdsToDelete);
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } catch (err) {
     console.error(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 

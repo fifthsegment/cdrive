@@ -115,11 +115,11 @@ router.put("/rename/:id", validateUser, async (incomingReq, res) => {
       return res.status(404).json({ error: "Item not found." });
     }
 
-    res
+    return res
       .status(200)
       .json({ message: "Filename updated successfully.", id, name: newName });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ error: error.message, bucket: process.env.MINIO_BUCKET });
   }
@@ -143,11 +143,11 @@ router.get("/download/:fileId", validateUser, async (incomingReq, res) => {
       ); // Expires in 24 hours
       const updatedUrl = new URL(url);
       const path = "/proxy" + updatedUrl.pathname + updatedUrl.search;
-      res.json({ path });
+      return res.json({ path });
     }
   } catch (error) {
     console.error("Error generating download URL:", error);
-    res.status(500).send("Error generating download URL");
+    return res.status(500).send("Error generating download URL");
   }
 });
 
@@ -182,10 +182,10 @@ router.get(
         .toArray();
 
       const contents = [...files, ...folders];
-      res.json(contents);
+      return res.json(contents);
     } catch (err) {
       console.error(err);
-      res.sendStatus(500);
+      return res.sendStatus(500);
     }
   }
 );
@@ -219,10 +219,10 @@ router.post("/", validateUser, async (incomingReq, res) => {
       }
     } catch (err) {
       console.error(err);
-      res.sendStatus(500);
+      return res.sendStatus(500);
     }
   }
-  res.sendStatus(200);
+  return res.sendStatus(200);
 });
 
 router.delete("/", validateUser, async (incomingReq, res) => {
@@ -233,10 +233,10 @@ router.delete("/", validateUser, async (incomingReq, res) => {
   }
   try {
     await deleteFiles(items, req.user?.id);
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } catch (err) {
     console.error(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 
