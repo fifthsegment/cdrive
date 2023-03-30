@@ -5,7 +5,7 @@ RUN apk update && apk upgrade && \
 #RUN apt-get update && \
 #    apt-get install -y git
 RUN git clone https://github.com/fifthsegment/cdrive.git .
-RUN cd frontend && yarn build && cd ..
+RUN cd frontend && yarn && yarn build && cd ..
 RUN cp -r server/* .
 #RUN rm yarn.lock
 RUN yarn
