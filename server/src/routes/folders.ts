@@ -205,12 +205,16 @@ router.delete("/", validateUser, async (incomingReq, res) => {
       _id: { $in: foldersToDelete.map((item) => item.id) },
     };
     const db = await connectToDatabase();
+    console.log("[Cdrive] Database connection made")
     await db.collection("files").deleteMany(queryDeleteFiles);
     await db.collection("folders").deleteMany(queryDeleteFolders);
-    await minioClient.removeObjects(bucketName, keysToDelete);
+    console.log("[Cdrive] Attempting to delete objects from storage")
+    const resp = await minioClient.removeObjects(bucketName, keysToDelete);
+    console.log("[Cdrive] Storage removal response = ", resp)
     res.json(itemIdsToDelete);
     return res.sendStatus(200);
   } catch (err) {
+    console.log("[CDrive:Error] Error in delete endpoint")
     console.error(err);
     return res.sendStatus(500);
   }
