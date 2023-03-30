@@ -1,4 +1,5 @@
 import express from "express";
+import path from "node:path"
 import morgan from "morgan";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -82,7 +83,16 @@ app.use(bodyParser.json());
 
     app.use("/api/info", infoRouter);
 
-    app.use('/app', express.static('frontend/build'));
+    app.use('/app/static', express.static('frontend/build'));
+
+    app.use('/app/*', function (req, res) {
+      res.sendFile(path.join(__dirname, "frontend/build/index.html"), function (err) {
+        if (err) {
+          res.status(500).send(err);
+        }
+      });
+    });
+
 
     app.get('/', (req, res) => {
       res.redirect('/app');
