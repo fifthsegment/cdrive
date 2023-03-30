@@ -1,5 +1,5 @@
 import express from "express";
-import path from "node:path"
+import path from "node:path";
 import morgan from "morgan";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -13,7 +13,12 @@ import filesRouter from "./routes/files";
 import foldersRouter from "./routes/folders";
 import infoRouter from "./routes/info";
 import searchRouter from "./routes/search";
-import { MINIO_USE_SSL, MINIO_ENDPOINT, MINIO_PORT, KEYCLOAK_SERVER_URL } from "./config";
+import {
+  MINIO_USE_SSL,
+  MINIO_ENDPOINT,
+  MINIO_PORT,
+  KEYCLOAK_SERVER_URL,
+} from "./config";
 import { initKeycloak } from "./utils/keycloak";
 import { initDb } from "./utils/initdb";
 
@@ -35,7 +40,6 @@ const connectToKeycloak = async () => {
     }
   }
 };
-
 
 const targetFileServerServiceHost =
   MINIO_USE_SSL.toLowerCase() === "true"
@@ -83,21 +87,20 @@ app.use(bodyParser.json());
 
     app.use("/api/info", infoRouter);
 
-    app.use('/app/static', express.static('frontend/build'));
+    app.use("/app/static", express.static("frontend/build"));
 
-    app.use('/app/*', function (req, res) {
-      res.sendFile(path.join(__dirname, "frontend/build/index.html"), function (err) {
+    app.use("/app/*", function (req, res) {
+      const filePath = path.normalize(__dirname + "/../..") + "/frontend/build/index.html";
+      res.sendFile(filePath, function (err) {
         if (err) {
           res.status(500).send(err);
         }
       });
     });
 
-
-    app.get('/', (req, res) => {
-      res.redirect('/app');
+    app.get("/", (req, res) => {
+      res.redirect("/app");
     });
-    
 
     // Start the server
     const port = process.env.PORT || 3000;
