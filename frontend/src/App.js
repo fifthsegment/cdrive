@@ -25,7 +25,7 @@ function App() {
         <React.StrictMode>
           <Router>
             <Routes>
-              
+              <Route exact path="/app" element={<Home />} />
               <Route exact path="/" element={<Home />} />
               <Route
                 path="/dashboard"
