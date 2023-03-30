@@ -17,15 +17,16 @@ import './App.css'
 
 function App() {
   const queryClient = new QueryClient();
+  const {NODE_ENV} = process.env;
 
+  const basename = NODE_ENV==="production" ? "/app" : ""; 
   return (
     <InfoProvider>
     <QueryClientProvider client={queryClient}>
       <ReactKeycloakProvider authClient={keycloak}>
         <React.StrictMode>
-          <Router>
+          <Router basename={basename}>
             <Routes>
-              <Route exact path="/app" element={<Home />} />
               <Route exact path="/" element={<Home />} />
               <Route
                 path="/dashboard"
