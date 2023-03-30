@@ -56,9 +56,7 @@ const createFileInDatabase = async (
 
 const deleteFiles = async (items:FileIdsObject[], userId: string) => {
   const db = await connectToDatabase();
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-  }
+  
   const query = { _id: { $in: items.map((item) => item.id) }, owner: userId };
 
   const files = await db.collection("files").find<File>(query).toArray();
@@ -72,7 +70,10 @@ const deleteFiles = async (items:FileIdsObject[], userId: string) => {
    */
   const bucketName = process.env.MINIO_BUCKET;
   const keysToDelete = files.map((file) => file._id + "/" + file.name);
+  console.log("[Cdrive] Attempting to delete objects from storage");
   await minioClient.removeObjects(bucketName, keysToDelete);
+  console.log("[Cdrive] Attempting to delete objects from db");
+
   await db.collection("files").deleteMany(query);
 };
 
@@ -232,9 +233,12 @@ router.delete("/", validateUser, async (incomingReq, res) => {
     return res.sendStatus(400);
   }
   try {
+    console.log("[Cdrive] Attempting to delete files");
     await deleteFiles(items, req.user?.id);
+    console.log("[Cdrive] Sending status");
     return res.sendStatus(200);
   } catch (err) {
+    console.log("[Cdrive] Error in deleting files");
     console.error(err);
     return res.sendStatus(500);
   }
