@@ -87,10 +87,12 @@ app.use(bodyParser.json());
 
     app.use("/api/info", infoRouter);
 
-    app.use("/app/static", express.static("../frontend/build/static", {fallthrough: false}));
+    const basePath = path.normalize(__dirname + "/..") 
+
+    app.use("/app/static", express.static(basePath + "/frontend/build/static", {fallthrough: false}));
 
     app.use(/\/app\/(?!static).*/, function (req, res) {
-      const filePath = path.normalize(__dirname + "/..") + "/frontend/build/index.html";
+      const filePath = basePath + "/frontend/build/index.html";
       res.sendFile(filePath, function (err) {
         if (err) {
           res.status(500).send(err);
