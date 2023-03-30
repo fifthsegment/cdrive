@@ -82,7 +82,12 @@ app.use(bodyParser.json());
 
     app.use("/api/info", infoRouter);
 
-    app.use('/static', express.static('frontend/build'));
+    app.use('/app', express.static('frontend/build'));
+
+    app.get('/', (req, res) => {
+      res.redirect('/app');
+    });
+    
 
     // Start the server
     const port = process.env.PORT || 3000;
