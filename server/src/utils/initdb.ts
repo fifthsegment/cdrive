@@ -13,7 +13,6 @@ import {
 export const initializeDb = async () => {
   try {
     const uri = `mongodb://${MONGO_ADMIN_USER}:${MONGO_ADMIN_PASS}@${MONGO_HOST}:${MONGO_PORT}`;
-    console.log("Initializing database = " + uri);
 
     const client = new MongoClient(uri);
     await client.connect();
@@ -24,7 +23,7 @@ export const initializeDb = async () => {
         pwd: MONGO_PASS,
         roles: [{ role: "readWrite", db: MONGO_DB }],
       };
-    console.log("Creating user command = ", payload)
+    console.log("Creating user command")
     const resp = await adminDb.command(payload);
     console.log("Response = ", resp)
 
