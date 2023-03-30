@@ -23,7 +23,7 @@ export const initializeDb = async () => {
         pwd: MONGO_PASS,
         roles: [{ role: "readWrite", db: MONGO_DB }],
       };
-    console.log("Creating user command")
+    console.log("Creating user command", payload)
     const resp = await adminDb.command(payload);
     console.log("Response = ", resp)
 
