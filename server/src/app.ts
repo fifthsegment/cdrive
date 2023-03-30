@@ -87,7 +87,7 @@ app.use(bodyParser.json());
 
     app.use("/api/info", infoRouter);
 
-    app.use("/app/static", express.static("frontend/build"));
+    app.use("/app/static", express.static("./frontend/build"));
 
     app.use("/app/*", function (req, res) {
       const filePath = path.normalize(__dirname + "/..") + "/frontend/build/index.html";
