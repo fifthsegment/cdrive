@@ -4,6 +4,7 @@
   "description": "A file storage app",
   "main": "app.js",
   "scripts": {
+    "start:dev": "ts-node src/app.ts",
     "start": "yarn run build && node bin/app.js",
     "build": "tsc",
     "test": "echo \"No tests yet\" && exit 0"
