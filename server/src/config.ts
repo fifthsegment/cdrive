@@ -20,7 +20,11 @@ const {
     MONGO_ADMIN_USER = "mongodb",
     MONGO_ADMIN_PASS = "mongodb",
     IMAGEPROC_SERVER = "imagor",
-    IMAGEPROC_SERVER_PORT = "8000"
+    IMAGEPROC_SERVER_PORT = "8000",
+    DOCUMENT_SERVER = "documents",
+    DOCUMENT_SERVER_PORT = "9980",
+    JWT_SECRET = "",
+    SHORT_TOKEN_DURATION = 3600
   } = process.env;
 
   export {
@@ -45,5 +49,9 @@ const {
     MONGO_PASS,
     IMAGEPROC_SERVER,
     IMAGEPROC_SERVER_PORT,
-    MINIO_BUCKET
+    MINIO_BUCKET,
+    DOCUMENT_SERVER,
+    DOCUMENT_SERVER_PORT,
+    JWT_SECRET,
+    SHORT_TOKEN_DURATION
   }

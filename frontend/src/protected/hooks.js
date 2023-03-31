@@ -6,6 +6,52 @@ import { useState } from "react";
 
 const baseUrl = SERVER_BASE_URL + "/api";
 
+export const useWOPIShortToken = (enabled) => {
+  const { keycloak } = useKeycloak();
+  const generateToken = async () => {
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${keycloak.token}`,
+      },
+    };
+    const response = await axios.post(
+      baseUrl + "/documents/token",
+      null,
+      config
+    );
+    return response.data;
+  };
+
+  return useQuery(["shortToken"], generateToken, {
+    enabled,
+    refetchOnWindowFocus: false,
+    refetchOnmount: false,
+    refetchOnReconnect: false,
+    retry: false
+  });
+};
+
+export const useWOPIDiscovery = () => {
+  const { keycloak } = useKeycloak();
+  const discover = async () => {
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${keycloak.token}`,
+      },
+    };
+    const response = await axios.get(
+      SERVER_BASE_URL + "/hosting/discovery",
+      config
+    );
+    return response.data;
+    //return [{label: "a", value: "a"}]
+  };
+
+  return useQuery(["wopidiscovery"], discover);
+};
+
 export const useSearchObjects = (searchTerm) => {
   const { keycloak } = useKeycloak();
   const fetchResults = async () => {

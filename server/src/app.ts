@@ -13,13 +13,15 @@ import filesRouter from "./routes/files";
 import foldersRouter from "./routes/folders";
 import infoRouter from "./routes/info";
 import staticRouter from "./routes/static";
-
+import documentsRouter from "./routes/documents";
 import searchRouter from "./routes/search";
 import {
   MINIO_USE_SSL,
   MINIO_ENDPOINT,
   MINIO_PORT,
   KEYCLOAK_SERVER_URL,
+  DOCUMENT_SERVER,
+  DOCUMENT_SERVER_PORT,
 } from "./config";
 import { initKeycloak } from "./utils/keycloak";
 import { initDb } from "./utils/initdb";
@@ -54,11 +56,34 @@ const fileServerProxyMiddleware = createProxyMiddleware({
   pathRewrite: { "^/proxy": "" },
 });
 
+const documentProxyMiddleware = createProxyMiddleware({
+  target: `http://${DOCUMENT_SERVER}:${DOCUMENT_SERVER_PORT}`,
+  changeOrigin: true,
+  ws: true,
+  pathRewrite: { "^/documentproxy": "" },
+});
+
 const authServerProxyMiddleware = createProxyMiddleware({
   target: KEYCLOAK_SERVER_URL,
   changeOrigin: true,
   pathRewrite: { "^/auth": "" },
 });
+
+const targetUrl = "http://collabora:9980";
+
+const proxyOptions = {
+  target: targetUrl,
+  changeOrigin: true,
+  ws: true, // Enable WebSocket proxying
+  onProxyReqWs: (proxyReq, req, socket, options, head) => {
+    console.log(`WebSocket connection: ${req.url}`);
+  },
+  onError: (err, req, res) => {
+    console.error("Proxy error:", err);
+    if ("status" in res)
+      res.status(500).send("Proxy error");
+  },
+};
 
 app.use(fileUpload());
 
@@ -87,14 +112,27 @@ app.use(bodyParser.json());
 
     app.use("/api/search", searchRouter);
 
+    app.use("/api/documents", documentsRouter);
+
     app.use("/api/info", infoRouter);
 
     app.use("/unprotected", staticRouter);
 
+    app.use("/browser", createProxyMiddleware(proxyOptions));
+    app.use("/hosting/discovery", createProxyMiddleware(proxyOptions));
+    app.use("/hosting/capabilities", createProxyMiddleware(proxyOptions));
+    app.use(/\/cool\/(.*)\/ws$/, createProxyMiddleware(proxyOptions));
+    app.use(/\/(c|l)ool/, createProxyMiddleware(proxyOptions));
+    app.use("/cool/adminws", createProxyMiddleware(proxyOptions));
 
-    const basePath = path.normalize(__dirname + "/..") 
+    const basePath = path.normalize(__dirname + "/..");
 
-    app.use("/app/static", express.static(basePath + "/frontend/build/static", {fallthrough: false}));
+    app.use(
+      "/app/static",
+      express.static(basePath + "/frontend/build/static", {
+        fallthrough: false,
+      })
+    );
 
     app.use(/\/app\/(?!static).*/, function (req, res) {
       const filePath = basePath + "/frontend/build/index.html";
@@ -113,7 +151,7 @@ app.use(bodyParser.json());
     const port = process.env.PORT || 3000;
     app.listen(port, () => console.log(`Server started on port ${port}`));
   } catch (error) {
-    console.error("[CDrive] Server error")
+    console.error("[CDrive] Server error");
 
     console.error(error);
   }

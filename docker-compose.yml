@@ -9,6 +9,7 @@ services:
       - ./server:/usr/src/app
     ports:
       - "3000:3000"
+    container_name: cdrive
     environment:
       NODE_ENV: "production"
       PORT: "3000"
@@ -35,6 +36,9 @@ services:
       KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
       IMAGEPROC_SERVER: ${IMAGEPROC_SERVER}
       IMAGEPROC_SERVER_PORT: ${IMAGEPROC_SERVER_PORT}
+      DOCUMENT_SERVER: ${DOCUMENT_SERVER}
+      DOCUMENT_SERVER_PORT: ${DOCUMENT_SERVER_PORT}
+      JWT_SECRET: ${JWT_SECRET}
 
     depends_on:
       - mongo
@@ -110,11 +114,25 @@ services:
     networks:
       - my-network
     command:
-      - start --import-realm  --proxy edge --hostname-strict=false --hostname-url ${SERVER_URL}/auth
+      - start --import-realm  --proxy edge --hostname-strict=false --hostname-url ${SERVER_PROTOCOL}${SERVER_BASENAME}/auth
       # - start-dev --import-realm 
       # --hostname-strict=false 
       #--hostname-url ${SERVER_URL}/auth
-
+  collabora:
+    image: collabora/code:latest
+    environment:
+      username: admin
+      password: admin
+      domain: cdrive
+      server_name: localhost:9980
+      dont_gen_ssl_cert: true
+      extra_params: --o:ssl.enable=false --o:ssl.termination=false
+    ports:
+      - "9980:9980"
+    cap_add:
+      - MKNOD
+    networks:
+      - my-network
   minio:
     image: minio/minio:latest
     volumes:
