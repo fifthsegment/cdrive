@@ -1,5 +1,14 @@
 import { ObjectId } from "mongodb";
 
+export type Preview = {
+  type: PreviewTypes
+  item: string
+}
+
+export type PreviewTypes = "small" | "large"
+
+export type PreviewsObject = {[key: string]: Preview};
+
 export type File = {
   _id: ObjectId;
   name: string;
@@ -10,6 +19,7 @@ export type File = {
   createdAt: Date;
   updatedAt: Date;
   owner: string;
+  previews?: PreviewsObject;
 };
 
 export type Folder = {

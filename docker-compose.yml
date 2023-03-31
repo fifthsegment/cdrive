@@ -33,6 +33,8 @@ services:
       KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
       KEYCLOAK_USER: ${KEYCLOAK_USER}
       KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+      IMAGEPROC_SERVER: ${IMAGEPROC_SERVER}
+      IMAGEPROC_SERVER_PORT: ${IMAGEPROC_SERVER_PORT}
 
     depends_on:
       - mongo
@@ -43,7 +45,44 @@ services:
     links:
       - keycloak
       - minio
+  imagor:
+    image: shumc/imagor:latest
+    environment:
+      #HTTP_LOADER_ALLOWED_SOURCES: "*"
+      PORT: 8000
+      IMAGOR_UNSAFE: 1 # unsafe URL for testing
+      IMAGOR_SECRET: mysecret # secret key for URL signature
+      AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
+      S3_ENDPOINT: http://${MINIO_ENDPOINT}:${MINIO_PORT}
+      HTTP_LOADER_DISABLE: 1
+      AWS_REGION: us-east-1
+      AWS_LOADER_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
+      AWS_LOADER_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
 
+      #AWS_RESULT_STORAGE_REGION: us-east-1
+      #AWS_RESULT_STORAGE_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
+      #AWS_RESULT_STORAGE_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
+      #S3_RESULT_STORAGE_ENDPOINT: http://${MINIO_ENDPOINT}:${MINIO_PORT}
+      AWS_STORAGE_REGION: us-east-1
+      AWS_STORAGE_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
+      AWS_STORAGE_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
+      S3_STORAGE_ENDPOINT: http://${MINIO_ENDPOINT}:${MINIO_PORT}
+      #S3_LOADER_ENDPOINT: http://${MINIO_ENDPOINT}:${MINIO_PORT}
+      S3_LOADER_BUCKET: ${MINIO_BUCKET}  # enable S3 loader by specifying bucket
+      #S3_RESULT_STORAGE_BUCKET: ${MINIO_BUCKET}
+      #S3_STORAGE_BUCKET: ${MINIO_BUCKET}
+      S3_BUCKET: ${MINIO_BUCKET}
+      S3_FORCE_PATH_STYLE: 1
+      IMAGOR_RESULT_STORAGE_PATH_STYLE: suffix
+      #SERVER_ACCESS_LOG: 1
+      DEBUG: 1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - minio
+    networks:
+      - my-network
   keycloak:
     #image: sleighzy/keycloak:latest
     hostname: keycloak

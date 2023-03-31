@@ -13,6 +13,7 @@ import {
   ResponseFolderWithChain,
 } from "../types/server";
 import { ObjectId } from "mongodb";
+import { deleteFiles } from "./files";
 
 const router = express.Router();
 
@@ -32,7 +33,7 @@ const getItemIdsToDelete = async (
     .find<Folder>({ parentFolder: folderId, owner: userId })
     .toArray()) as Folder[];
 
-  console.log("[Cdrive] Recursive find = ", [...folders, ...files])
+  console.log("[Cdrive] Recursive find = ", [...folders, ...files]);
   // Recursively delete all the files and subfolders
   let output: { id: any; key: string; type: string }[] = [];
   for (let i = 0; i < folders.length; i++) {
@@ -180,37 +181,43 @@ router.post("/", validateUser, async (incomingReq, res) => {
 
 router.delete("/", validateUser, async (incomingReq, res) => {
   const req = incomingReq as IRequest;
-  console.log("[Cdrive] Req.body = ", req.body)
-  const fileIds  = req.body.fileIds;
-  console.log("[Cdrive] fileIds = ", fileIds)
+  console.log("[Cdrive] Req.body = ", req.body);
+  const fileIds = req.body.fileIds;
+  console.log("[Cdrive] fileIds = ", fileIds);
 
   if (!fileIds || fileIds.length === 0) {
-    return res.sendStatus(400).send({error: "No fileIds received"});
+    return res.sendStatus(400).send({ error: "No fileIds received" });
   }
   try {
-    console.log("[Cdrive] User id = ", req.user.id, "Folder id = ", fileIds[0].id)
-    const itemIdsToDelete = await getItemIdsToDelete(fileIds[0].id, req.user?.id);
+    console.log(
+      "[Cdrive] User id = ",
+      req.user.id,
+      "Folder id = ",
+      fileIds[0].id
+    );
+    const itemIdsToDelete = await getItemIdsToDelete(
+      fileIds[0].id,
+      req.user?.id
+    );
     const filesToDelete = itemIdsToDelete.filter((item) => !isFolder(item));
     const foldersToDelete = itemIdsToDelete.filter((item) => isFolder(item));
-    console.log("[Cdrive] Items to delete = ", itemIdsToDelete)
+    console.log("[Cdrive] Items to delete = ", itemIdsToDelete);
     const bucketName = process.env.MINIO_BUCKET;
 
-    const keysToDelete = filesToDelete.map((item) => item.key);
 
-    const queryDeleteFiles = {
-      _id: { $in: filesToDelete.map((item) => item.id) },
-    };
     const queryDeleteFolders = {
       _id: { $in: foldersToDelete.map((item) => item.id) },
     };
     const db = await connectToDatabase();
     console.log("[Cdrive] Database connection made");
-    await db.collection("files").deleteMany(queryDeleteFiles);
+    await deleteFiles(
+      filesToDelete.map((item) => ({
+        id: item.id
+      })),
+      req.user.id
+    );
     await db.collection("folders").deleteMany(queryDeleteFolders);
-    console.log("[Cdrive] Attempting to delete objects from storage");
-    await minioClient.removeObjects(bucketName, keysToDelete);
-    console.log("[Cdrive] keys to delete = ", keysToDelete)
-    res.sendStatus(200)
+    res.sendStatus(200);
   } catch (err) {
     console.log("[CDrive:Error] Error in delete endpoint");
     console.log(err);

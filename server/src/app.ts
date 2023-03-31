@@ -12,6 +12,8 @@ import { configurePassport } from "./utils/auth";
 import filesRouter from "./routes/files";
 import foldersRouter from "./routes/folders";
 import infoRouter from "./routes/info";
+import staticRouter from "./routes/static";
+
 import searchRouter from "./routes/search";
 import {
   MINIO_USE_SSL,
@@ -86,6 +88,9 @@ app.use(bodyParser.json());
     app.use("/api/search", searchRouter);
 
     app.use("/api/info", infoRouter);
+
+    app.use("/unprotected", staticRouter);
+
 
     const basePath = path.normalize(__dirname + "/..") 
 

@@ -13,7 +13,11 @@ import {
 import prettyBytes from "pretty-bytes";
 import React, { useEffect, useState } from "react";
 import FileUploadV2 from "./FileUploadV2";
-import { MINIMUM_OBJECTS_PER_PAGE, ROOT_FOLDER } from "../contants";
+import {
+  MINIMUM_OBJECTS_PER_PAGE,
+  ROOT_FOLDER,
+  SERVER_BASE_URL,
+} from "../contants";
 import { useDeleteFiles, useDeleteFolders, useFiles, useFolder } from "./hooks";
 import NewFolder from "./NewFolder";
 import Button from "@mui/material/Button";
@@ -42,6 +46,7 @@ import ObjectIconDisplayer from "./IconDisplayer";
 import Portal from "../Portal";
 import { lightGreen } from "@mui/material/colors";
 import { isFolder } from "../utils";
+import { FilePreview } from "./FilePreview";
 
 function FileListComp() {
   const { keycloak } = useKeycloak();
@@ -52,6 +57,7 @@ function FileListComp() {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const [searchSelectedId, setSearchSelectedId] = useState(undefined);
 
@@ -156,6 +162,11 @@ function FileListComp() {
 
   const onRenameFile = setSelectedFile;
 
+  const handleCellDoubleClick = ({row:file}) => {
+    setSelectedFile(file);
+    setIsPreviewOpen(true);
+  };
+
   const onFolderClick = (item) => {
     if (selectedFolder !== undefined && item._id === selectedFolder._id) {
       return;
@@ -185,6 +196,10 @@ function FileListComp() {
     }
   };
 
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+  }
+
   const showFooter = (data || []).length > pageSize ? true : false;
 
   const columns = [
@@ -198,7 +213,19 @@ function FileListComp() {
           <>
             {item.type === "file" ? (
               <span>
-                <ObjectIconDisplayer object={item} />
+                {item.previews ? (
+                  <>
+                    <img
+                      alt="thumbnail"
+                      style={{ width: 30, height: 40 }}
+                      src={`${SERVER_BASE_URL}/unprotected/thumbnail/${item._id}/${item.previews["small"].item}`}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ObjectIconDisplayer object={item} />
+                  </>
+                )}
                 &nbsp; {value}
               </span>
             ) : (
@@ -245,9 +272,13 @@ function FileListComp() {
             <IconButton onClick={() => handleDelete(object)} size="small">
               <DeleteIcon />
             </IconButton>
-            {!isFolder(object) && <IconButton onClick={() => downloadFile(keycloak.token, object.id)}>
-              <CloudDownloadIcon />
-            </IconButton>}
+            {!isFolder(object) && (
+              <IconButton
+                onClick={() => downloadFile(keycloak.token, object.id)}
+              >
+                <CloudDownloadIcon />
+              </IconButton>
+            )}
           </>
         );
       },
@@ -316,8 +347,9 @@ function FileListComp() {
             ))}
           </Typography>
         </Box>
-
+        <FilePreview isOpen={isPreviewOpen} file={selectedFile} handleClose={handleClosePreview}/>
         <DataGrid
+          onCellDoubleClick={handleCellDoubleClick}
           pageSize={pageSize}
           onPageChange={(params) => setCurrentPage(params.page)}
           hideFooter={!showFooter}
@@ -331,7 +363,7 @@ function FileListComp() {
             },
           }}
           localeText={{
-            noRowsLabel: 'Nothing found'
+            noRowsLabel: "Nothing found",
           }}
           componentsProps={{
             pagination: {

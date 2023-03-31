@@ -6,6 +6,7 @@ import {
   RequestBodyFileIds,
   RequestQueryGetFiles,
 } from "../types/server";
+const { PassThrough } = require("stream");
 
 import express from "express";
 import * as Minio from "minio";
@@ -14,23 +15,37 @@ import stream from "stream";
 import { validateUser } from "../middleware/auth";
 import { connectToDatabase } from "../db/db";
 import { minioClient } from "../utils/minioClient";
-import { File, Folder } from "../types/objects";
+import { File, Folder, Preview, PreviewsObject, PreviewTypes } from "../types/objects";
 import { UploadedFile } from "express-fileupload";
-import { ObjectId } from "mongodb";
+import {
+  MINIO_BUCKET,
+} from "../config";
+import { createPreview } from "../utils/image";
 
 const router = express.Router();
 
 const createFileInServer = async (
-  file: UploadedFile,
+  fileName: string,
   fileKey: string,
   data: Buffer
 ) => {
   const passThrough = new stream.PassThrough();
   passThrough.end(data);
 
-  const key = fileKey + "/" + file.name;
-  await minioClient.putObject(process.env.MINIO_BUCKET, key, passThrough);
+  const key = fileKey + "/" + fileName;
+  await minioClient.putObject(MINIO_BUCKET, key, passThrough);
 };
+
+const createPreviews = async (fileName: string, fileKey: string) : Promise<PreviewsObject> => {
+  let previewTypes = ["small", "large"] as PreviewTypes[];
+  let output = {};
+  for (let i = 0; i < previewTypes.length; i++) {
+    const previewType = previewTypes[i];
+    const generatedPreview = await createPreview(fileName, fileKey, previewType);
+    output[previewType]= generatedPreview;
+  }
+  return output;
+}
 
 const createFileInDatabase = async (
   file: CreateDatabaseFile,
@@ -41,7 +56,7 @@ const createFileInDatabase = async (
   const { mimetype, name, size } = file;
   const { id } = file;
 
-  await db.collection("files").insertOne({
+  await db.collection<File>("files").insertOne({
     _id: id,
     name: name,
     parentFolder: parentId,
@@ -51,10 +66,11 @@ const createFileInDatabase = async (
     createdAt: new Date(),
     updatedAt: new Date(),
     owner: file.owner,
+    previews: file.previews,
   });
 };
 
-const deleteFiles = async (items:FileIdsObject[], userId: string) => {
+export const deleteFiles = async (items: FileIdsObject[], userId: string) => {
   const db = await connectToDatabase();
 
   const query = { _id: { $in: items.map((item) => item.id) }, owner: userId };
@@ -68,8 +84,18 @@ const deleteFiles = async (items:FileIdsObject[], userId: string) => {
   /**
    * Remove files from minio
    */
-  const bucketName = process.env.MINIO_BUCKET;
-  const keysToDelete = files.map((file) => file._id + "/" + file.name);
+  const keysToDelete = files.reduce((acc: string[], file) => {
+    if (file && file.previews) {
+      return [
+        ...acc,
+        file._id + "/" + file.name,
+        ...Object.entries(file.previews).map(([,preview]) => file._id + "/" + preview.item),
+      ];
+    } else {
+      return [...acc, file._id + "/" + file.name];
+    }
+  }, []);
+  const bucketName = MINIO_BUCKET;
   console.log("[Cdrive] Attempting to delete objects from storage");
   await minioClient.removeObjects(bucketName, keysToDelete);
   console.log("[Cdrive] Attempting to delete objects from db");
@@ -96,14 +122,14 @@ router.put("/rename/:id", validateUser, async (incomingReq, res) => {
     const newFilename = id + "/" + newName;
 
     console.log("Old name = ", oldFilename);
-    console.log("New Filename = ", newFilename)
+    console.log("New Filename = ", newFilename);
 
     // Check if the source object exists
     const stat = await minioClient.statObject(bucketName, oldFilename);
-    console.log("stat = ", stat)
+    console.log("stat = ", stat);
     // Copy the object with the new filename
     const copyConditions = new Minio.CopyConditions();
-    console.log("copy conditions", copyConditions)
+    console.log("copy conditions", copyConditions);
     await minioClient.copyObject(
       bucketName,
       newFilename,
@@ -199,7 +225,7 @@ router.get(
 
 router.post("/", validateUser, async (incomingReq, res) => {
   const req = incomingReq as IRequest;
-  const parentId : string  = req.body.parentId;
+  const parentId: string = req.body.parentId;
   const files = Array.isArray(req.files?.files)
     ? req.files?.files
     : [req.files?.files];
@@ -214,12 +240,20 @@ router.post("/", validateUser, async (incomingReq, res) => {
     try {
       const fileId = uuidv4();
       if (file) {
-        await createFileInServer(file, fileId, file?.data);
+        const isImage = /\.(jpe?g|png|gif|bmp)$/i.test(file.name);
+        let previews: undefined | PreviewsObject = undefined;
+        await createFileInServer(file.name, fileId, file?.data);
+        if (isImage) {
+          previews = await createPreviews(file.name, fileId);
+          console.log("[Cdrive] Previews = ", previews);
+        }
+
         await createFileInDatabase(
           {
             ...file,
             id: fileId,
             owner: req.user?.id,
+            previews: previews,
           } as any,
           parentId
         );
