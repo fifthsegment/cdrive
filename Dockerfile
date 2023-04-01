@@ -5,6 +5,7 @@ WORKDIR /app
 
 # RUN chmod +x /opt/jboss/startup-scripts/configure-keycloak.sh
 
+RUN ls -la
 RUN cp -r server/* .
 # COPY package*.json ./
 RUN yarn install --production
