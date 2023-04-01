@@ -17,8 +17,11 @@ RUN ls -la
 
 RUN cd frontend && yarn && yarn build && rm -rf node_modules && cd ..
 
-EXPOSE 3000 
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+
+EXPOSE 80 3000
 
 
 #CMD ["yarn", "start"]
-CMD ["sh", "-c", "cd /usr/src/app && yarn prod"]
+CMD ["sh", "-c", "cd /usr/src/app && yarn prod & nginx -g 'daemon off;'"]
