@@ -32,4 +32,4 @@ EXPOSE 3000
 RUN ls
 
 # RUN rm /opt/jboss/keycloak/standalone/configuration/keycloak-add-user.json
-CMD (ls -la && pwd && npm start)
+CMD (ls -la && pwd && cd server && npm start)
