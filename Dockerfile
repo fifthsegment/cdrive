@@ -5,11 +5,11 @@ WORKDIR /app
 
 # RUN chmod +x /opt/jboss/startup-scripts/configure-keycloak.sh
 
-
-COPY package*.json ./
+RUN cp -r server/* .
+# COPY package*.json ./
 RUN yarn install --production
 
-COPY . .
+#COPY . .
 
 ENV NODE_ENV production
 ENV PORT 3000
@@ -29,7 +29,7 @@ ENV JWT_SECRET myjwtsecret
 
 EXPOSE 3000
 
-RUN ls
+# RUN ls
 
 # RUN rm /opt/jboss/keycloak/standalone/configuration/keycloak-add-user.json
 CMD (ls -la && pwd && cd server && npm start)
