@@ -1,16 +1,16 @@
 FROM node:16-alpine
 
-WORKDIR /app
+WORKDIR /usr/src/app
 # WORKDIR /server
 
 # RUN chmod +x /opt/jboss/startup-scripts/configure-keycloak.sh
-
+COPY . .
 RUN ls -la
 RUN cp -r server/* .
 # COPY package*.json ./
 RUN yarn install --production
 
-#COPY . .
+
 
 ENV NODE_ENV production
 ENV PORT 3000
