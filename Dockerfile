@@ -29,6 +29,7 @@ ENV JWT_SECRET myjwtsecret
 
 EXPOSE 3000
 
-# RUN rm /opt/jboss/keycloak/standalone/configuration/keycloak-add-user.json
+RUN ls
 
-CMD ["yarn", "start"]
+# RUN rm /opt/jboss/keycloak/standalone/configuration/keycloak-add-user.json
+CMD ["ls && ", "yarn", "start"]
