@@ -14,6 +14,8 @@ RUN cp -r server/* .
 RUN yarn --production
 RUN yarn build
 RUN ls -la
+RUN yarn global add pm2
+
 
 RUN cd frontend && yarn && yarn build && rm -rf node_modules && cd ..
 
@@ -23,4 +25,4 @@ EXPOSE 3000 80
 
 
 #CMD ["yarn", "start"]
-CMD ["sh", "-c", "cd /usr/src/app && yarn prod & nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "cd /usr/src/app && pm2-runtime start yarn --interpreter bash --name my-app -- prod & nginx -g 'daemon off;'"]
