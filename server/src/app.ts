@@ -149,7 +149,7 @@ app.use(bodyParser.json());
 
     // Start the server
     const port = process.env.PORT || 3000;
-    app.listen(port, () => console.log(`Server started on port ${port}`));
+    app.listen(port, () => console.log(`[Cdrive] Server started on port ${port}`));
   } catch (error) {
     console.error("[CDrive] Server error");
 

@@ -11,8 +11,6 @@ RUN cp -r server/* .
 RUN yarn --production
 RUN yarn build
 RUN ls -la
-COPY . .
-
 
 EXPOSE 3000
 
