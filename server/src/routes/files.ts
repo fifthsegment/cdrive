@@ -223,12 +223,12 @@ router.get(
   }
 );
 
-router.post("/", validateUser, async (incomingReq, res) => {
+router.post("/", validateUser, async (incomingReq : any, res) => {
   const req = incomingReq as IRequest;
   const parentId: string = req.body.parentId;
-  const files = Array.isArray(req.files?.files)
-    ? req.files?.files
-    : [req.files?.files];
+  const files = Array.isArray(incomingReq.files?.files)
+    ? incomingReq.files?.files
+    : [incomingReq.files?.files];
   if (!parentId) {
     return res.sendStatus(400);
   }

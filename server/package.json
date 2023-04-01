@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start:dev": "ts-node src/app.ts",
+    "prod": "node bin/app.js",
     "start": "yarn run build && node bin/app.js",
     "build": "tsc",
     "test": "echo \"No tests yet\" && exit 0"
