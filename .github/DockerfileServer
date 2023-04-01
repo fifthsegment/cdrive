@@ -25,4 +25,4 @@ EXPOSE 3000 80
 
 
 #CMD ["yarn", "start"]
-CMD ["sh", "-c", "cd /usr/src/app && pm2-runtime start yarn prod & nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "ls -la && cd /usr/src/app && yarn start & nginx -g 'daemon off;'"]
