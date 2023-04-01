@@ -22,4 +22,4 @@ EXPOSE 3000 80
 
 
 #CMD ["yarn", "start"]
-CMD ["sh", "-c", "cd /usr/src/app && yarn prod & nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "yarn prod & nginx -g 'daemon off;'"]
