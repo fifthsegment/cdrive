@@ -21,7 +21,6 @@ import { useDeleteFiles, useDeleteFolders, useFiles, useFolder } from "./hooks";
 import NewFolder from "./NewFolder";
 import Button from "@mui/material/Button";
 import { DataGrid } from "@mui/x-data-grid";
-import ArticleIcon from "@mui/icons-material/Article";
 import HomeIcon from "@mui/icons-material/Home";
 import FolderIcon from "@mui/icons-material/Folder";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -32,18 +31,11 @@ import BackIcon from "@mui/icons-material/ArrowBack";
 import Dialog from "@mui/material/Dialog";
 import { formatDistanceToNow } from "date-fns";
 
-import { Stack } from "@mui/system";
 import { downloadFile } from "../utils/file";
 import RenameObject from "./RenameObject";
 import Search from "./Search";
-import {
-  ObjectIconWrapper,
-  TiltedButton,
-  TiltedButtonContainer,
-} from "./elements";
 import ObjectIconDisplayer from "./IconDisplayer";
 import Portal from "../Portal";
-import { lightGreen } from "@mui/material/colors";
 import { isFolder } from "../utils";
 import { FilePreview } from "./FilePreview";
 
@@ -62,7 +54,7 @@ function FileListComp() {
 
   const pageSize = MINIMUM_OBJECTS_PER_PAGE;
 
-  const { isLoading, isError, isFetched, data, error } = useFiles(
+  const { isLoading, isError, data, error } = useFiles(
     selectedFolder._id,
     pageSize,
     currentPage

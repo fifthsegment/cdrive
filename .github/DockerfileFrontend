@@ -12,7 +12,6 @@ RUN yarn --production
 RUN yarn build
 RUN ls -la
 RUN cd frontend && yarn && yarn build && rm -rf node_modules && cd ..
-COPY . .
 
 
 EXPOSE 3000
