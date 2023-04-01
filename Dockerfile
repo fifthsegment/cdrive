@@ -8,9 +8,10 @@ COPY . .
 RUN ls -la
 RUN cp -r server/* .
 # COPY package*.json ./
-RUN yarn install --production
-
-
+RUN yarn --production
+RUN yarn build
+RUN ls -la
+COPY . .
 
 ENV NODE_ENV production
 ENV PORT 3000
