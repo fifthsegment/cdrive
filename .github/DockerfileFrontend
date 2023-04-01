@@ -12,10 +12,13 @@ RUN yarn --production
 RUN yarn build
 RUN ls -la
 RUN cd frontend && yarn && yarn build && rm -rf node_modules && cd ..
+FROM nginx:stable-alpine
 
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 3000
+EXPOSE 3000 80
 
 # RUN rm /opt/jboss/keycloak/standalone/configuration/keycloak-add-user.json
 
-CMD ["yarn", "start"]
+#CMD ["yarn", "start"]
+CMD ["sh", "-c", "cd /usr/src/app && yarn prod & nginx -g 'daemon off;'"]
