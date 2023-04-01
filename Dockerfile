@@ -11,7 +11,7 @@ RUN cp -r server/* .
 RUN yarn --production
 RUN yarn build
 RUN ls -la
-RUN cd frontend && yarn build && cd ..
+RUN cd frontend && yarn && yarn build && cd ..
 COPY . .
 
 
