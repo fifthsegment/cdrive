@@ -198,7 +198,7 @@ app.use(bodyParser.json());
     const port = process.env.PORT || 3000;
 
     server.listen(port, () => {
-      console.log(`[Cdrive] App and WebSocket proxy server running on port ${port}`);
+      console.log(`[Cdrive] - App and WebSocket proxy server running on port ${port}`);
     });
     
   } catch (error) {
