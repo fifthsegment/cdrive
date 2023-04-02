@@ -45,7 +45,7 @@ router.use(wopiHeaders);
 // CheckFileInfo endpoint
 router.get(
   "/wopi/files/:fileId",
-  //shortTokenValidator,
+  shortTokenValidator,
   async (req, res) => {
     const fileId = req.params.fileId;
 
@@ -78,7 +78,7 @@ router.get(
 // GetFile endpoint
 router.get(
   "/wopi/files/:fileId/contents",
-  //shortTokenValidator,
+  shortTokenValidator,
   async (req, res) => {
     
     const fileId = req.params.fileId;
@@ -103,7 +103,7 @@ router.get(
 // PutFile endpoint
 router.post(
   "/wopi/files/:fileId/contents",
-  //shortTokenValidator,
+  shortTokenValidator,
   async (req, res) => {
     const fileId = req.params.fileId;
 
