@@ -1,15 +1,13 @@
 import { MINIO_BUCKET } from "../config";
 import { connectToDatabase } from "../db/db";
 import { File } from "../types/objects";
-import { IRequest } from "../types/server";
 import express from "express";
 import { minioClient } from "../utils/minioClient";
 
 const router = express.Router();
 
 
-router.get("/thumbnail/:fileId/:thumbName", async (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
+router.get("/thumbnail/:fileId/:thumbName", async (req, res) => {
   const { fileId, thumbName } = req.params;
   try {
     const db = await connectToDatabase();
