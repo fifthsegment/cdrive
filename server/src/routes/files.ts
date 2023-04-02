@@ -191,6 +191,7 @@ router.get(
       page = "1",
     } = req.query as RequestQueryGetFiles;
     try {
+      console.log("APP USER = ", req)
       let db = await connectToDatabase();
 
       const skipCount = (parseInt(page) - 1) * parseInt(limit);

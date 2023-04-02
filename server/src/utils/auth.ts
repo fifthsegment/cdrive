@@ -12,19 +12,19 @@ const keycloakConfig = {
   url: KEYCLOAK_SERVER_URL,
   credentials: { secret: KEYCLOAK_SECRET },
 };
-
 export const configurePassport = async () => {
   passport.use(
     "passport-keycloak-bearer",
     new KeycloakBearerStrategy(keycloakConfig, (payload, done) => {
-      const user = {
+      const appUser = {
         id: payload.email,
         kcid: payload.sub,
         name: payload.name,
         email: payload.email,
       } as User;
 
-      return done(null, user);
+      return done(null, appUser);
     })
   );
 };
+
