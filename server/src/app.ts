@@ -25,6 +25,8 @@ import {
 } from "./config";
 import { initKeycloak } from "./utils/keycloak";
 import { initDb } from "./utils/initdb";
+const http = require('http');
+const httpProxy = require('http-proxy');
 
 const app = express();
 
@@ -69,7 +71,7 @@ const authServerProxyMiddleware = createProxyMiddleware({
   pathRewrite: { "^/auth": "" },
 });
 
-const targetUrl = "http://collabora:9980";
+const targetUrl = "http://collabora:9980/";
 
 const proxyOptions = {
   target: targetUrl,
@@ -80,8 +82,7 @@ const proxyOptions = {
   },
   onError: (err, req, res) => {
     console.error("Proxy error:", err);
-    if ("status" in res)
-      res.status(500).send("Proxy error");
+    if ("status" in res) res.status(500).send("Proxy error");
   },
 };
 
@@ -118,11 +119,45 @@ app.use(bodyParser.json());
 
     app.use("/unprotected", staticRouter);
 
-    app.use("/browser", createProxyMiddleware(proxyOptions));
-    app.use("/hosting/discovery", createProxyMiddleware(proxyOptions));
-    app.use("/hosting/capabilities", createProxyMiddleware(proxyOptions));
-    app.use(/\/cool\/(.*)\/ws$/, createProxyMiddleware(proxyOptions));
-    app.use(/\/(c|l)ool/, createProxyMiddleware(proxyOptions));
+    app.use(
+      "/browser/",
+      createProxyMiddleware({
+        target: targetUrl + "/browser/",
+        changeOrigin: true,
+      })
+    );
+
+    app.use(
+      "/hosting/discovery",
+      createProxyMiddleware({
+        target: targetUrl + "/hosting/discovery",
+        changeOrigin: true,
+      })
+    );
+
+    app.use(
+      "/hosting/capabilities",
+      createProxyMiddleware({
+        target: targetUrl + "/hosting/capabilities",
+        changeOrigin: true,
+      })
+    );
+
+    const coolMiddleware = createProxyMiddleware({
+      target: targetUrl + "/cool/",
+      changeOrigin: true,
+      ws: true,
+      logger: console,
+    });
+    app.use("/cool/", coolMiddleware);
+    app.use(
+      /\/(c|l)ool/,
+      createProxyMiddleware({
+        target: targetUrl + /\/(c|l)ool/,
+        changeOrigin: true,
+        ws: true,
+      })
+    );
     app.use("/cool/adminws", createProxyMiddleware(proxyOptions));
 
     const basePath = path.normalize(__dirname + "/..");
@@ -147,9 +182,25 @@ app.use(bodyParser.json());
       res.redirect("/app/");
     });
 
+    const targetHost = "http://collabora:9980"; // Update the target URL if needed
+    const proxy = httpProxy.createProxyServer({});
+
+    const server = http.createServer(app);
+
+    server.on('upgrade', (req, socket, head) => {
+      // Check if the request path ends with /ws
+      if (req.url.endsWith('/ws')) {
+        proxy.ws(req, socket, head, { target: targetHost });
+      }
+    });
+
     // Start the server
     const port = process.env.PORT || 3000;
-    app.listen(port, () => console.log(`[Cdrive] Server started on port ${port}`));
+
+    server.listen(port, () => {
+      console.log(`Express app and WebSocket proxy server running on port ${port}`);
+    });
+    
   } catch (error) {
     console.error("[CDrive] Server error");
 

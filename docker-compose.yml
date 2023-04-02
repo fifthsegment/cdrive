@@ -124,7 +124,8 @@ services:
       username: admin
       password: admin
       domain: cdrive
-      server_name: ${COLLABORA_SERVER_NAME}${COLLABORA_SERVER_PORT}
+      server_name: ${COLLABORA_SERVER_NAME}:${COLLABORA_SERVER_PORT}
+      # server_name: localhost:3000
       dont_gen_ssl_cert: true
       extra_params: --o:ssl.enable=false --o:ssl.termination=false
     ports:
