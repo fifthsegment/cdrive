@@ -8,7 +8,7 @@ export const shortTokenValidator = (req, res, next) => {
 
   try {
     const decodedToken = jwt.verify(access_token, JWT_SECRET);
-    req.user = {
+    req.appUser = {
       id: decodedToken.user, // Extract the user ID or username from the token
     };
     next();
