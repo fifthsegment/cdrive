@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import {
   CreateDatabaseFile,
   FileIdsObject,
-  IRequest,
   RequestBodyFileIds,
   RequestQueryGetFiles,
 } from "../types/server";
@@ -103,14 +102,13 @@ export const deleteFiles = async (items: FileIdsObject[], userId: string) => {
   await db.collection("files").deleteMany(query);
 };
 
-router.put("/rename/:id", validateUser, async (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
+router.put("/rename/:id", validateUser, async (req, res) => {
   const { id } = req.params;
   const { newName, type } = req.body;
   const db = await connectToDatabase();
   const collection = db.collection("files");
   const files = await collection
-    .find<File>({ _id: id, owner: req.user?.id })
+    .find<File>({ _id: id, owner: req.appUser?.id })
     .toArray();
   if (files.length === 0) {
     return res.status(404).json({ error: "Item not found." });
@@ -158,14 +156,13 @@ router.put("/rename/:id", validateUser, async (incomingReq, res) => {
   }
 });
 
-router.get("/download/:fileId", validateUser, async (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
+router.get("/download/:fileId", validateUser, async (req, res) => {
   const { fileId } = req.params;
   try {
     const db = await connectToDatabase();
     const files = await db
       .collection("files")
-      .find<File>({ _id: fileId, owner: req.user?.id })
+      .find<File>({ _id: fileId, owner: req.appUser?.id })
       .toArray();
     if (files.length > 0) {
       const file = files[0];
@@ -187,8 +184,7 @@ router.get("/download/:fileId", validateUser, async (incomingReq, res) => {
 router.get(
   "/",
   validateUser,
-  async (incomingReq, res: Response<(File | Folder)[]>) => {
-    const req = incomingReq as IRequest;
+  async (req, res: Response<(File | Folder)[]>) => {
     const {
       parentId,
       limit = "100",
@@ -202,14 +198,14 @@ router.get(
 
       const files = await db
         .collection("files")
-        .find<File>({ parentFolder: parentId, owner: req.user?.id })
+        .find<File>({ parentFolder: parentId, owner: req.appUser?.id })
         .limit(limitCount)
         .skip(skipCount)
         .toArray();
 
       const folders = await db
         .collection("folders")
-        .find<Folder>({ parentFolder: parentId, owner: req.user?.id })
+        .find<Folder>({ parentFolder: parentId, owner: req.appUser?.id })
         .limit(limitCount)
         .skip(skipCount)
         .toArray();
@@ -223,12 +219,11 @@ router.get(
   }
 );
 
-router.post("/", validateUser, async (incomingReq : any, res) => {
-  const req = incomingReq as IRequest;
+router.post("/", validateUser, async (req : any, res) => {
   const parentId: string = req.body.parentId;
-  const files = Array.isArray(incomingReq.files?.files)
-    ? incomingReq.files?.files
-    : [incomingReq.files?.files];
+  const files = Array.isArray(req.files?.files)
+    ? req.files?.files
+    : [req.files?.files];
   if (!parentId) {
     return res.sendStatus(400);
   }
@@ -266,15 +261,14 @@ router.post("/", validateUser, async (incomingReq : any, res) => {
   return res.sendStatus(200);
 });
 
-router.delete("/", validateUser, async (incomingReq, res) => {
-  const req = incomingReq as IRequest;
+router.delete("/", validateUser, async (req, res) => {
   const { fileIds: items = [] } = req.body as RequestBodyFileIds;
   if (!items || items.length === 0) {
     return res.sendStatus(400);
   }
   try {
     console.log("[Cdrive] Attempting to delete files");
-    await deleteFiles(items, req.user?.id);
+    await deleteFiles(items, req.appUser?.id || "");
     console.log("[Cdrive] Sending status");
     return res.sendStatus(200);
   } catch (err) {

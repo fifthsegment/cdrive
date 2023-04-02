@@ -1,10 +1,10 @@
-import express from "express";
+import express, { Request } from "express";
 import { JWT_SECRET, MINIO_BUCKET, SHORT_TOKEN_DURATION } from "../config";
 import { connectToDatabase } from "../db/db";
 import { validateUser } from "../middleware/auth";
 import { shortTokenValidator } from "../middleware/shorttoken";
 import { File } from "../types/objects";
-import { IRequest } from "../types/server";
+import { User } from "../types/user";
 import { minioClient } from "../utils/minioClient";
 const jwt = require("jsonwebtoken");
 
@@ -43,48 +43,51 @@ router.use(bodyParser.raw({ limit: "2gb", type: "*/*" }));
 router.use(wopiHeaders);
 
 // CheckFileInfo endpoint
-router.get("/wopi/files/:fileId", shortTokenValidator, async (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
-  const fileId = req.params.fileId;
+router.get(
+  "/wopi/files/:fileId",
+  shortTokenValidator,
+  async (req, res) => {
+    const fileId = req.params.fileId;
 
-  try {
-    const db = await connectToDatabase();
-    const file = await db.collection("files").findOne<File>({ _id: fileId });
-    if (!file) {
-      return res.status(404).json({ error: "Item not found." });
+    try {
+      const db = await connectToDatabase();
+      const file = await db.collection("files").findOne<File>({ _id: fileId });
+      if (!file) {
+        return res.status(404).json({ error: "Item not found." });
+      }
+      const fileKey = `${fileId}/${file.name}`;
+      const metaData = await minioClient.statObject(MINIO_BUCKET, fileKey);
+      res.json({
+        BaseFileName: file.name,
+        OwnerId: req.appUser?.id,
+        Size: metaData.size,
+        UserId: req.appUser?.id,
+        Version: metaData.etag,
+        UserFriendlyName: req.appUser?.id,
+        UserCanWrite: true,
+        UserCanNotWriteRelative: true,
+        SupportsUpdate: true,
+        SupportsLocks: false,
+      });
+    } catch (err) {
+      res.status(500).send("Error retrieving file information");
     }
-    const fileKey = `${fileId}/${file.name}`;
-    const metaData = await minioClient.statObject(MINIO_BUCKET, fileKey);
-    res.json({
-      BaseFileName: file.name,
-      OwnerId: req.user.id,
-      Size: metaData.size,
-      UserId: req.user.id,
-      Version: metaData.etag,
-      UserFriendlyName: req.user.id,
-      UserCanWrite: true,
-      UserCanNotWriteRelative: true,
-      SupportsUpdate: true,
-      SupportsLocks: false,
-    });
-  } catch (err) {
-    res.status(500).send("Error retrieving file information");
   }
-});
+);
 
 // GetFile endpoint
 router.get(
   "/wopi/files/:fileId/contents",
   shortTokenValidator,
-  async (incomingReq, res) => {
-    const req = incomingReq as unknown as IRequest;
-
+  async (req, res) => {
+    
     const fileId = req.params.fileId;
-
     try {
       const db = await connectToDatabase();
-      
-      const file = await db.collection("files").findOne<File>({ _id: fileId, owner: req.user.id });
+
+      const file = await db
+        .collection("files")
+        .findOne<File>({ _id: fileId, owner: req.appUser?.id });
       if (!file) {
         return res.status(404).json({ error: "Item not found." });
       }
@@ -94,20 +97,21 @@ router.get(
     } catch (err) {
       res.status(500).send("Error retrieving file contents");
     }
-  }
+  } 
 );
 
 // PutFile endpoint
 router.post(
   "/wopi/files/:fileId/contents",
   shortTokenValidator,
-  async (incomingReq, res) => {
-    const req = incomingReq as unknown as IRequest;
+  async (req, res) => {
     const fileId = req.params.fileId;
 
     try {
       const db = await connectToDatabase();
-      const file = await db.collection("files").findOne<File>({ _id: fileId, owner: req.user.id });
+      const file = await db
+        .collection("files")
+        .findOne<File>({ _id: fileId, owner: req.appUser?.id });
       if (!file) {
         return res.status(404).json({ error: "Item not found." });
       }
@@ -124,16 +128,14 @@ router.post(
   }
 );
 
-router.get("/validateToken", shortTokenValidator, async (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
-  
-  res.send(`Hello, user with ID: ${req.user.id}`);
+router.get("/validateToken", shortTokenValidator, async (req, res) => {
+
+  res.send(`Hello, user with ID: ${req.appUser?.id}`);
 });
 
-router.post("/token", validateUser, (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
+router.post("/token", validateUser, (req, res) => {
 
-  const shortToken = jwt.sign({ user: req.user.id }, JWT_SECRET, {
+  const shortToken = jwt.sign({ user: req.appUser?.id }, JWT_SECRET, {
     expiresIn: SHORT_TOKEN_DURATION,
   });
 

@@ -6,12 +6,7 @@ import { validateUser } from "../middleware/auth";
 import { isFolder } from "../utils/helpers";
 import { minioClient } from "../utils/minioClient";
 import { Folder, File } from "../types/objects";
-import {
-  IRequest,
-  RequestBodyFileIds,
-  ResponseError,
-  ResponseFolderWithChain,
-} from "../types/server";
+import { ResponseError, ResponseFolderWithChain } from "../types/server";
 import { ObjectId } from "mongodb";
 import { deleteFiles } from "./files";
 
@@ -90,16 +85,15 @@ router.get(
   "/:id",
   validateUser,
   async (
-    incomingReq,
+    req,
     res: Response<ResponseFolderWithChain[] | ResponseError>
   ) => {
-    const req = incomingReq as unknown as IRequest;
     const { id } = req.params;
     try {
       const db = await connectToDatabase();
       const folders = (await db
         .collection("folders")
-        .find<Folder>({ _id: id, owner: req.user?.id })
+        .find<Folder>({ _id: id, owner: req.appUser?.id })
         .toArray()) as Folder[];
       if (folders.length === 0) {
         return res.status(404).json({ error: "Item not found." });
@@ -115,8 +109,7 @@ router.get(
   }
 );
 
-router.put("/rename/:id", validateUser, async (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
+router.put("/rename/:id", validateUser, async (req, res) => {
   const { id } = req.params;
   const { newName } = req.body;
 
@@ -124,7 +117,7 @@ router.put("/rename/:id", validateUser, async (incomingReq, res) => {
     const db = await connectToDatabase();
     const folders = await db
       .collection("folders")
-      .find<Folder>({ _id: id, owner: req.user?.id })
+      .find<Folder>({ _id: id, owner: req.appUser?.id })
       .toArray();
     if (folders.length === 0) {
       return res.status(404).json({ error: "Item not found." });
@@ -152,8 +145,7 @@ router.put("/rename/:id", validateUser, async (incomingReq, res) => {
   }
 });
 
-router.post("/", validateUser, async (incomingReq, res) => {
-  const req = incomingReq as unknown as IRequest;
+router.post("/", validateUser, async (req, res) => {
   const { name, parentId, path } = req.body;
   if (!name || !parentId) {
     return res.sendStatus(400);
@@ -170,7 +162,7 @@ router.post("/", validateUser, async (incomingReq, res) => {
       path: `${path}/${name}`,
       createdAt: new Date(),
       updatedAt: new Date(),
-      owner: req.user?.id,
+      owner: req.appUser?.id,
     });
     return res.sendStatus(200);
   } catch (err) {
@@ -179,8 +171,7 @@ router.post("/", validateUser, async (incomingReq, res) => {
   }
 });
 
-router.delete("/", validateUser, async (incomingReq, res) => {
-  const req = incomingReq as IRequest;
+router.delete("/", validateUser, async (req, res) => {
   console.log("[Cdrive] Req.body = ", req.body);
   const fileIds = req.body.fileIds;
   console.log("[Cdrive] fileIds = ", fileIds);
@@ -191,19 +182,18 @@ router.delete("/", validateUser, async (incomingReq, res) => {
   try {
     console.log(
       "[Cdrive] User id = ",
-      req.user.id,
+      req.appUser?.id,
       "Folder id = ",
       fileIds[0].id
     );
     const itemIdsToDelete = await getItemIdsToDelete(
       fileIds[0].id,
-      req.user?.id
+      req.appUser?.id || ""
     );
     const filesToDelete = itemIdsToDelete.filter((item) => !isFolder(item));
     const foldersToDelete = itemIdsToDelete.filter((item) => isFolder(item));
     console.log("[Cdrive] Items to delete = ", itemIdsToDelete);
     const bucketName = process.env.MINIO_BUCKET;
-
 
     const queryDeleteFolders = {
       _id: { $in: foldersToDelete.map((item) => item.id) },
@@ -212,9 +202,9 @@ router.delete("/", validateUser, async (incomingReq, res) => {
     console.log("[Cdrive] Database connection made");
     await deleteFiles(
       filesToDelete.map((item) => ({
-        id: item.id
+        id: item.id,
       })),
-      req.user.id
+      req.appUser?.id || ""
     );
     await db.collection("folders").deleteMany(queryDeleteFolders);
     res.sendStatus(200);
