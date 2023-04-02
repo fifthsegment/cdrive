@@ -30,7 +30,7 @@ export const FilePreview = ({ handleClose, isOpen, file }) => {
             />
           </div>
         )}
-        {file && ["doc", "docx", "odt", "xls", "xlsx", "ods", "ppt", "pptx", "odp"].includes(ext) && <FileDocPreview file={file} />}
+        {file && ["doc", "docx", "odt", "xls", "xlsx", "ods", "ppt", "pptx", "odp", "pdf", "txt"].includes(ext) && <FileDocPreview file={file} />}
       </DialogContent>
     </Dialog>
   );
