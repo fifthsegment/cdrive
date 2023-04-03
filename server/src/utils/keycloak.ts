@@ -56,12 +56,13 @@ async function createRealm(realmJson: any): Promise<void> {
     return item;
   } )
 
-  console.log("Realmjson identity providers = ", realmJson.identityProviders)
+  console.log("Realmjson identity providers = ", realmJson.identityProviders[0].config)
   const accessToken = await getAdminAccessToken();
   try {
     console.log(
       `Attempting to create a realm on ${keycloakBaseUrl}/admin/realms`
     );
+    console.log(KEYCLOAK_GOOGLE_CLIENTID)
     const response = await axios.post(
       `${keycloakBaseUrl}/admin/realms`,
       realmJson,
@@ -164,8 +165,7 @@ const realmJson:any = {
         offlineAccess: "false",
         userIp: "false",
         clientSecret: "",
-        clientId:
-          "",
+        clientId:  "",
       },
     },
   ],
