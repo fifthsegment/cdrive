@@ -2,11 +2,11 @@ import axios from "axios";
 import {
   KEYCLOAK_ADMIN_PASS,
   KEYCLOAK_ADMIN_USER,
+  KEYCLOAK_GOOGLE_CLIENTID,
+  KEYCLOAK_GOOGLE_CLIENTSECRET,
   KEYCLOAK_SERVER_URL,
 } from "../config";
-const querystring = require('querystring');
-
-
+const querystring = require("querystring");
 
 const keycloakBaseUrl = `${KEYCLOAK_SERVER_URL}`;
 const adminUsername = KEYCLOAK_ADMIN_USER;
@@ -36,11 +36,25 @@ async function getAdminAccessToken(): Promise<string> {
   return response.data.access_token;
 }
 
-async function createRealm(realmJson: object): Promise<void> {
+async function createRealm(realmJson: any): Promise<void> {
   console.log(
     "Getting access token from = " +
       `${keycloakBaseUrl}/realms/master/protocol/openid-connect/token`
   );
+
+  realmJson.identityProviders = realmJson.identityProviders.map(item => {
+    if (item.providerId === "google") {
+      return {
+        ...item,
+        config: {
+          ...item.config,
+          clientId: KEYCLOAK_GOOGLE_CLIENTID,
+          clientSecret: KEYCLOAK_GOOGLE_CLIENTSECRET,
+        }
+      }
+    }
+    return item;
+  } )
   const accessToken = await getAdminAccessToken();
   try {
     console.log(
@@ -63,7 +77,7 @@ async function createRealm(realmJson: object): Promise<void> {
   }
 }
 
-const realmJson = {
+const realmJson:any = {
   id: "myrealm",
   realm: "myrealm",
   displayNameHtml: "Login",
@@ -131,6 +145,28 @@ const realmJson = {
     ],
   },
   userFederationProviders: [],
+  identityProviders: [
+    {
+      alias: "google",
+      internalId: "9b2f7613-32f2-4ae1-9795-b200c250a5e3",
+      providerId: "google",
+      enabled: true,
+      updateProfileFirstLoginMode: "on",
+      trustEmail: false,
+      storeToken: false,
+      addReadTokenRoleOnCreate: false,
+      authenticateByDefault: false,
+      linkOnly: false,
+      firstBrokerLoginFlowAlias: "first broker login",
+      config: {
+        offlineAccess: "false",
+        userIp: "false",
+        clientSecret: "",
+        clientId:
+          "",
+      },
+    },
+  ],
 };
 export const initKeycloak = async () => {
   try {
