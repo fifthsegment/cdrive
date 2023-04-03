@@ -55,6 +55,8 @@ async function createRealm(realmJson: any): Promise<void> {
     }
     return item;
   } )
+
+  console.log("Realmjson identity providers = ", realmJson.identityProviders)
   const accessToken = await getAdminAccessToken();
   try {
     console.log(
