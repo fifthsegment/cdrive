@@ -105,20 +105,7 @@ const realmJson:any = {
       },
     ],
   },
-  users: [
-    {
-      username: "user",
-      enabled: true,
-      email: "sample-user@example",
-      firstName: "Sample",
-      lastName: "User",
-      credentials: [{ type: "password", value: "password" }],
-      realmRoles: ["user"],
-      clientRoles: {
-        account: ["view-profile", "manage-account"],
-      },
-    },
-  ],
+  users: [],
   clients: [
     {
       clientId: "myclient",
@@ -170,6 +157,24 @@ const realmJson:any = {
     },
   ],
 };
+
+/**
+ * 
+ * [
+    {
+      username: "user",
+      enabled: true,
+      email: "sample-user@example",
+      firstName: "Sample",
+      lastName: "User",
+      credentials: [{ type: "password", value: "password" }],
+      realmRoles: ["user"],
+      clientRoles: {
+        account: ["view-profile", "manage-account"],
+      },
+    },
+  ]
+ */
 export const initKeycloak = async () => {
   try {
     setTimeout(async () => {
