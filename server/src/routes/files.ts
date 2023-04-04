@@ -235,7 +235,7 @@ router.post("/", validateUser, async (req : any, res) => {
     try {
       const fileId = uuidv4();
       if (file) {
-        const isImage = /\.(jpe?g|png|gif|bmp)$/i.test(file.name);
+        const isImage = /\.(jpe?g|png|gif|bmp|heic|tiff)$/i.test(file.name);
         let previews: undefined | PreviewsObject = undefined;
         await createFileInServer(file.name, fileId, file?.data);
         if (isImage) {
