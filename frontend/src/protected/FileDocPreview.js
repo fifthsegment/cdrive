@@ -41,8 +41,8 @@ export const FileDocPreview = ({ file }) => {
 
   return (
     <>
-    <a href={`${wopiUrl}&access_token=${tokenData.short_token}`} target="_blank
-    " >Edit</a>
+    {tokenFetched && <a href={`${wopiUrl}&access_token=${tokenData.short_token}`} target="_blank
+    " >Edit</a>}
       {tokenFetched && (
         <iframe
           src={`${wopiUrl}&access_token=${tokenData.short_token}`}
