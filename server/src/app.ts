@@ -190,6 +190,7 @@ app.use(bodyParser.json());
     server.on('upgrade', (req, socket, head) => {
       // Check if the request path ends with /ws
       if (req.url.endsWith('/ws')) {
+        console.log("[Proxying Request] " + req.url)
         proxy.ws(req, socket, head, { target: targetHost });
       }
     });
