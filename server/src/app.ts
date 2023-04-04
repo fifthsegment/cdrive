@@ -183,7 +183,10 @@ app.use(bodyParser.json());
     });
 
     const targetHost = "http://collabora:9980"; // Update the target URL if needed
-    const proxy = httpProxy.createProxyServer({});
+    const proxy = httpProxy.createProxyServer({
+      proxyTimeout:5000,
+      timeout: 10000
+    });
 
     const server = http.createServer(app);
 
