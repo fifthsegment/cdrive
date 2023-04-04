@@ -8,8 +8,8 @@ router.post("/", validateUser, async (req, res) => {
     const {search} = req.body;
     try {
         const db = await connectToDatabase();
-        const files = await db.collection('files').find({ name: { $regex: search, $options: 'i' } }).toArray();
-        const folders = await db.collection('folders').find({ name: { $regex: search, $options: 'i' } }).toArray();
+        const files = await db.collection('files').find({ name: { $regex: search, $options: 'i' }, owner: req.appUser?.id }).toArray();
+        const folders = await db.collection('folders').find({ name: { $regex: search, $options: 'i' }, owner: req.appUser?.id }).toArray();
         res.status(200).json({data:[...files, ...folders]});
       } catch (err) {
         console.error(err);

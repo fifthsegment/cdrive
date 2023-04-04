@@ -2,6 +2,10 @@ FROM node:16-alpine
 #FROM nginx:stable-alpine
 
 WORKDIR /usr/src/app
+
+# Install PM2 globally
+RUN npm install -g pm2
+
 # WORKDIR /server
 
 # RUN chmod +x /opt/jboss/startup-scripts/configure-keycloak.sh
@@ -10,6 +14,8 @@ COPY . .
 RUN cp -r server/* .
 # COPY package*.json ./
 RUN yarn --production
+
+
 RUN yarn build
 #RUN ls -la
 
@@ -21,4 +27,6 @@ EXPOSE 3000
 
 
 #CMD ["yarn", "start"]
-CMD ["sh", "-c", "cd /usr/src/app && yarn prod"]
+#CMD ["sh", "-c", "cd /usr/src/app && yarn prod"]
+CMD ["pm2-runtime", "ecosystem.config.js"]
+
