@@ -103,11 +103,10 @@ app.use(bodyParser.json());
     await initDb();
     // await connectToDb();
     app.use(passport.initialize());
-
-
     
 
-
+    app.use(logRequest);
+    
     app.use("/proxy", fileServerProxyMiddleware);
 
     app.use("/auth", authServerProxyMiddleware);
