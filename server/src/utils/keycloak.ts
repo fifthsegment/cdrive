@@ -187,6 +187,7 @@ export const initKeycloak = async () => {
       console.log("Trying to create realm attempt = ", retries);
       setTimeout(async () => {
         const response = await createRealm(realmJson);
+        retries++;
         if (response) {
           createdRealm = true;
           retries = 0;
