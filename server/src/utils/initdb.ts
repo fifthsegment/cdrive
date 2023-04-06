@@ -1,5 +1,4 @@
 import { MongoClient } from "mongodb";
-import { sleep } from "react-query/types/core/utils";
 import {
   MONGO_ADMIN_DB,
   MONGO_ADMIN_PASS,
@@ -10,6 +9,7 @@ import {
   MONGO_PORT,
   MONGO_USER,
 } from "../config";
+import { sleep } from "./helpers";
 
 export const initializeDb = async () => {
   try {
