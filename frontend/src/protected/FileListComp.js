@@ -153,7 +153,7 @@ function FileListComp() {
 
   const onRenameFile = setSelectedFile;
 
-  const handleCellDoubleClick = ({row:file}) => {
+  const handleCellDoubleClick = ({ row: file }) => {
     setSelectedFile(file);
     setIsPreviewOpen(true);
   };
@@ -189,7 +189,7 @@ function FileListComp() {
 
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
-  }
+  };
 
   const showFooter = (data || []).length > pageSize ? true : false;
 
@@ -205,19 +205,29 @@ function FileListComp() {
             {item.type === "file" ? (
               <span>
                 {item.previews ? (
-                  <>
+                  <span>
                     <img
                       alt="thumbnail"
-                      style={{ width: 30, height: 40 }}
+                      style={{
+                        width: 30,
+                        height: 30,
+                        border: "1px solid lightgray",
+                        padding: 1,
+                        position: "relative",
+                        top: 5,
+                        marginRight: 10,
+                      }}
                       src={`${SERVER_BASE_URL}/unprotected/thumbnail/${item._id}/${item.previews["small"].item}`}
                     />
-                  </>
+                   <span >{value}</span>
+                  </span>
                 ) : (
-                  <>
+                  <span>
                     <ObjectIconDisplayer object={item} />
-                  </>
+                    &nbsp; <span>{value}</span>
+                  </span>
                 )}
-                &nbsp; {value}
+                
               </span>
             ) : (
               <span onClick={() => onFolderClick(item)}>
@@ -338,7 +348,11 @@ function FileListComp() {
             ))}
           </Typography>
         </Box>
-        <FilePreview isOpen={isPreviewOpen} file={selectedFile} handleClose={handleClosePreview}/>
+        <FilePreview
+          isOpen={isPreviewOpen}
+          file={selectedFile}
+          handleClose={handleClosePreview}
+        />
         <DataGrid
           onCellDoubleClick={handleCellDoubleClick}
           pageSize={pageSize}

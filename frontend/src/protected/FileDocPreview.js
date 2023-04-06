@@ -1,3 +1,4 @@
+import { Launch } from "@mui/icons-material";
 import {  useMemo, useState } from "react";
 import { useWOPIDiscovery, useWOPIShortToken } from "./hooks";
 
@@ -42,7 +43,7 @@ export const FileDocPreview = ({ file }) => {
   return (
     <>
     {tokenFetched && <a href={`${wopiUrl}&access_token=${tokenData.short_token}`} target="_blank
-    " >Edit</a>}
+    " >Edit in a new tab <Launch /></a>}
       {tokenFetched && (
         <iframe
           src={`${wopiUrl}&access_token=${tokenData.short_token}`}

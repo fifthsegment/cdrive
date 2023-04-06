@@ -20,12 +20,15 @@ import {
   TotalProgress,
 } from "./elements";
 import { lightGreen, red } from "@mui/material/colors";
+import styled from "styled-components";
 
 function FileUpload({ parentId }) {
   const [showProgress, setShowProgress] = useState(false);
-  const [uploadFiles, uploadProgress, uploadComplete, status] =
-    useUploadFilesV3();
+  const [uploadFiles, uploadProgress, uploadComplete, status="uploading"] =
+   useUploadFilesV3();
+
   const [, setFiles] = useState([]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const files = event.target.files;
@@ -40,10 +43,12 @@ function FileUpload({ parentId }) {
     }
   }, [uploadComplete]);
 
+  const totalFiles = Object.keys(uploadProgress).length;
+  const totalFilesArray = Object.entries(uploadProgress);
+
   const totalProgress =
-    Object.entries(uploadProgress).reduce((acc, [, value]) => {
-      return acc + value;
-    }, 0) / Object.keys(uploadProgress).length;
+    totalFilesArray.reduce((acc, [, value]) => acc + value, 0) / totalFiles;
+
   return (
     <>
       <form>
@@ -57,43 +62,35 @@ function FileUpload({ parentId }) {
         />
       </form>
       {status === "uploading" && (
-        <Paper
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: "calc(50% - 150px)",
-            width: 300,
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-          }}
-        >
+        <PaperWrapped elevation={4}>
           <div
             style={{ width: "100%", backgroundColor: lightGreen[500] }}
             onClick={() => {
               setShowProgress(!showProgress);
             }}
           >
-            <IconButton>
-              {!showProgress && <KeyboardDoubleArrowUpIcon />}
-              {showProgress && <KeyboardDoubleArrowDownIcon />}
-            </IconButton>
-            <Typography style={{ display: "inline-block" }}>
-              <TotalProgress
-              color="secondary"
-                size={20}
-                value={totalProgress}
-                variant="determinate"
-              />
-
-              {`Uploading ${Object.keys(uploadProgress).length} files`}
+            <Typography
+              style={{ display: "inline-block", width: "100%" }}
+              color="white"
+            >
+              <div style={{ width: "100%" }}>
+                <IconButton style={{ color: "white" }}>
+                  {!showProgress && <KeyboardDoubleArrowUpIcon />}
+                  {showProgress && <KeyboardDoubleArrowDownIcon />}
+                </IconButton>
+                <TotalFilesContainer>{`Uploading ${totalFiles} files`}</TotalFilesContainer>
+                <TotalProgressContainer>
+                  {Math.floor(totalProgress)}%
+                </TotalProgressContainer>
+              </div>
             </Typography>
           </div>
 
           {showProgress && (
-            <div>
+            <div style={{ height: 150, overflow: "scroll" }}>
               <MenuList>
                 <GridContainer>
-                  {Object.entries(uploadProgress).map(([key, value]) => (
+                  {totalFilesArray.map(([key, value]) => (
                     <GridRow key={key}>
                       <GridItem>
                         <div style={{ width: "100%" }}>
@@ -113,10 +110,32 @@ function FileUpload({ parentId }) {
               </MenuList>
             </div>
           )}
-        </Paper>
+        </PaperWrapped>
       )}
     </>
   );
 }
 
+export const PaperWrapped = styled(Paper)`
+  position: absolute;
+  bottom: 0;
+  left: calc(50% - 200px);
+  width: 400px;
+  overflow: scroll,
+  borderBottomLeftRadius: 0;
+  borderBottomRightRadius: 0;
+  zIndex: 1;
+`;
+
+export const TotalProgressContainer = styled.div`
+  font-weight: bold;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+`;
+
+export const TotalFilesContainer = styled.strong`
+  position: relative;
+  top: 2px;
+`
 export default FileUpload;

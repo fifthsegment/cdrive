@@ -23,7 +23,8 @@ export const TotalProgress = styled(CircularProgress)`
 export const GridRow = styled.div`
   display: flex;
   border-bottom: 1px solid #ccc;
-
+  height: 34px;
+  overflow: hidden;
 `;
 export const GridContainer = styled.div`
   display: flex;
@@ -32,10 +33,13 @@ export const GridContainer = styled.div`
 
 export const GridItem = styled.div`
   width: 100px;
+  min-width: 100px;
   padding: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
 `;
 
 export const GridItemGrow = styled.div`

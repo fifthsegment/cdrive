@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import { MongoAPIError, MongoClient, MongoError } from "mongodb";
 import {
   MONGO_ADMIN_DB,
   MONGO_ADMIN_PASS,
@@ -32,6 +32,7 @@ export const initializeDb = async () => {
     adminDb.createCollection("folders");
     return true;
   } catch (error) {
+  
     console.error("Unable to create user + db");
     return false;
   }
