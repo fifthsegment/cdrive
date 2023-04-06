@@ -6,6 +6,7 @@ import {
   KEYCLOAK_GOOGLE_CLIENTSECRET,
   KEYCLOAK_SERVER_URL,
 } from "../config";
+import { sleep } from "./helpers";
 const querystring = require("querystring");
 
 const keycloakBaseUrl = `${KEYCLOAK_SERVER_URL}`;
@@ -177,7 +178,6 @@ const realmJson:any = {
   ]
  */
 
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const initKeycloak = async () => {
   try {

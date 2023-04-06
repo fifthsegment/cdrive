@@ -1,4 +1,5 @@
 import { MongoClient } from "mongodb";
+import { sleep } from "react-query/types/core/utils";
 import {
   MONGO_ADMIN_DB,
   MONGO_ADMIN_PASS,
@@ -29,14 +30,37 @@ export const initializeDb = async () => {
 
     adminDb.createCollection("files");
     adminDb.createCollection("folders");
+    return true;
   } catch (error) {
     console.error("Unable to create user + db");
-    console.error(error);
+    return false;
   }
 };
 
+
 export const initDb = async () => {
-  setTimeout(async () => {
-    await initializeDb();
-  }, 1000 * 5);
+
+  try {
+    const ALLOWED_RETRIES = 10;
+    const RETRY_INTERVAL = 1000 * 5;
+    let retries = 0;
+    let createdDb = false;
+
+    while (!createdDb && retries < ALLOWED_RETRIES) {
+      console.log("Trying to create db attempt =", retries);
+
+      const response = await initializeDb();
+      if (response) {
+        createdDb = true;
+        retries = 0;
+      }
+      if (!createdDb && retries < ALLOWED_RETRIES) {
+        retries++;
+        await sleep(RETRY_INTERVAL);
+      }
+    }
+  } catch (error) {
+    console.log("[Cdrive] Error initializing database")
+  }
+
 };
