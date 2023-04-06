@@ -2,15 +2,18 @@ import { LOGGLY_SUBDOMAIN, LOGGLY_TOKEN } from "../config";
 
 const winston = require("winston");
 require("winston-loggly-bulk");
-
-winston.add(
-  new winston.transports.Loggly({
-    token: LOGGLY_TOKEN,
-    subdomain: LOGGLY_SUBDOMAIN,
-    tags: ["cdrive"],
-    json: true,
-  })
-);
+try {
+  winston.add(
+    new winston.transports.Loggly({
+      token: LOGGLY_TOKEN,
+      subdomain: LOGGLY_SUBDOMAIN,
+      tags: ["cdrive"],
+      json: true,
+    })
+  );
+} catch (error) {
+  console.log("[Cdrive] Unable to load logging middleware");
+}
 
 // Middleware to log every request
 export function logRequest(req, res, next) {

@@ -176,6 +176,9 @@ const realmJson:any = {
     },
   ]
  */
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const initKeycloak = async () => {
   try {
     const ALLOWED_RETRIES = 10;
@@ -184,15 +187,21 @@ export const initKeycloak = async () => {
     let createdRealm = false;
 
     while (!createdRealm && retries < ALLOWED_RETRIES) {
-      console.log("Trying to create realm attempt = ", retries);
-      await setTimeout(async () => {
+      console.log("Trying to create realm attempt =", retries);
+      try {
         const response = await createRealm(realmJson);
-        retries++;
         if (response) {
           createdRealm = true;
           retries = 0;
         }
-      }, RETRY_INTERVAL);
+      } catch (error) {
+        console.error("Error creating realm");
+      }
+    
+      if (!createdRealm && retries < ALLOWED_RETRIES) {
+        retries++;
+        await sleep(RETRY_INTERVAL);
+      }
     }
 
 
