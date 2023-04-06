@@ -183,12 +183,7 @@ app.use(bodyParser.json());
     });
 
     app.get("/app", function (req, res) {
-      const filePath = basePath + "/frontend/build/index.html";
-      res.sendFile(filePath, function (err) {
-        if (err) {
-          res.status(500).send(err);
-        }
-      });
+      res.redirect("/app/");
     });
 
     app.get("/", (req, res) => {
