@@ -36,7 +36,7 @@ async function getAdminAccessToken(): Promise<string> {
   return response.data.access_token;
 }
 
-async function createRealm(realmJson: any): Promise<void> {
+async function createRealm(realmJson: any): Promise<boolean> {
   console.log(
     "Getting access token from = " +
       `${keycloakBaseUrl}/realms/master/protocol/openid-connect/token`
@@ -56,7 +56,6 @@ async function createRealm(realmJson: any): Promise<void> {
     return item;
   } )
 
-  console.log("Realmjson identity providers = ", realmJson.identityProviders[0].config)
   const accessToken = await getAdminAccessToken();
   try {
     console.log(
@@ -75,8 +74,10 @@ async function createRealm(realmJson: any): Promise<void> {
     );
 
     console.log("Realm created successfully:", response.data);
+    return true;
   } catch (error) {
     console.error("Error creating realm:", error.response.data);
+    return false;
   }
 }
 
@@ -177,9 +178,23 @@ const realmJson:any = {
  */
 export const initKeycloak = async () => {
   try {
-    setTimeout(async () => {
-      await createRealm(realmJson);
-    }, 1000 * 8);
+    const ALLOWED_RETRIES = 10;
+    const RETRY_INTERVAL = 1000 * 5;
+    let retries = 0;
+    let createdRealm = false;
+
+    while (!createdRealm && retries < ALLOWED_RETRIES) {
+      console.log("Trying to create realm attempt = ", retries);
+      setTimeout(async () => {
+        const response = await createRealm(realmJson);
+        if (response) {
+          createdRealm = true;
+          retries = 0;
+        }
+      }, RETRY_INTERVAL);
+    }
+
+
   } catch (error) {
     console.error("Error executing createRealm function:", error.response.data);
   }

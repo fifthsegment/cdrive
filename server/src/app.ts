@@ -25,6 +25,7 @@ import {
 } from "./config";
 import { initKeycloak } from "./utils/keycloak";
 import { initDb } from "./utils/initdb";
+import { logRequest } from "./middleware/log";
 const http = require('http');
 const httpProxy = require('http-proxy');
 
@@ -102,6 +103,9 @@ app.use(bodyParser.json());
     await initDb();
     // await connectToDb();
     app.use(passport.initialize());
+
+    app.use(logRequest);
+
 
     app.use("/proxy", fileServerProxyMiddleware);
 
