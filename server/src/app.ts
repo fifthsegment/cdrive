@@ -106,7 +106,7 @@ app.use(bodyParser.json());
     
 
     app.use(logRequest);
-    
+
     app.use("/proxy", fileServerProxyMiddleware);
 
     app.use("/auth", authServerProxyMiddleware);
@@ -174,6 +174,15 @@ app.use(bodyParser.json());
     );
 
     app.use(/\/app\/(?!static).*/, function (req, res) {
+      const filePath = basePath + "/frontend/build/index.html";
+      res.sendFile(filePath, function (err) {
+        if (err) {
+          res.status(500).send(err);
+        }
+      });
+    });
+
+    app.get("/app", function (req, res) {
       const filePath = basePath + "/frontend/build/index.html";
       res.sendFile(filePath, function (err) {
         if (err) {
